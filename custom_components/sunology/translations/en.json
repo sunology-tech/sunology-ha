@@ -1,0 +1,24 @@
+{
+    "config": {
+      "title": "Sunology",
+      "step": {
+        "sunology_setup": {
+          "title": "Set up Sunology e-Hub",
+          "description": "Setup the gateway",
+          "data": {
+            "lan_gateway_ip": "Host ip"
+          }
+        }
+      },
+      "error": {
+        "faulty_credentials": "Authorization failed",
+        "unknown": "Unknown error"
+      },
+      "abort": {
+        "one_instance_allowed": "Only one instance is allowed."
+      },
+      "create_entry": {
+        "default": "\n\nPairing success"
+      }
+    }
+  }

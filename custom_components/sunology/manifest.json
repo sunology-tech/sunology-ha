@@ -1,0 +1,11 @@
+{
+    "domain": "sunology",
+    "name": "Sunology",
+    "config_flow": true,
+    "iot_class": "local_polling",
+    "requirements": ["websockets>=14.1", "asyncio>=3.4.3"],
+    "dependencies": [],
+    "codeowners": ["sunology-tech"],
+    "integration_type": "hub",
+    "version": "0.1.4"
+  }

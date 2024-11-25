@@ -1,0 +1,7 @@
+#python venv
+lib64/
+bin/
+include/
+lib/
+**/__pycache__/
+env/

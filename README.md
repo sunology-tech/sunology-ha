@@ -1,0 +1,36 @@
+# Sunology Home assistant
+![Logo Sunology](sunology.jpg)
+
+[![hacs_badge](https://img.shields.io/badge/HACS-Default-orange.svg?style=for-the-badge)](https://github.com/custom-components/hacs)
+[![install_badge](https://img.shields.io/badge/dynamic/json?color=41BDF5&logo=home-assistant&label=integration%20usage&suffix=%20installs&cacheSeconds=15600&url=https://analytics.home-assistant.io/custom_integrations.json&query=$.sunology.total)](https://analytics.home-assistant.io/)
+
+Our website: https://www.sunology.eu
+
+## Description
+This component offer you a way to add to PV System and EMS to your favorite SmartHome device.
+
+You need to have an Home assistant E-Hub
+
+## Options
+
+| Name | Type | Requirement | `default` Description
+| ---- | ---- | ------- | -----------
+| lan_gateway_ip | string | **Optional** | Sunology e-Hub lan ip.
+
+## Technical add the logo for cusom integration:
+ 1 - Open a PR on this repo like this one to register the integration
+    https://github.com/home-assistant/wheels-custom-integrations/pull/62
+ 2 - Open a PR on this repo to add the listed logo
+    https://github.com/home-assistant/brands/pull/1643
+
+
+## Installation
+### Option 1
+- Just folow the integration config steps.
+
+### Option 2
+- Add the folowing line in your configuration.yml
+```yaml
+    sunology:
+        lan_gateway_ip: <gateway_ip_address> # Default sunology-ehub.local
+```
