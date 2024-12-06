@@ -1,5 +1,6 @@
 """Home Assistant representation of an Sunology device."""
 from .const import DOMAIN as SUNOLOGY_DOMAIN
+from homeassistant.helpers.device_registry import DeviceInfo
 
 
 class SunologyAbstractDevice:
@@ -7,11 +8,11 @@ class SunologyAbstractDevice:
 
     def __init__(self, raw_device):
         """Initialize PLAYMax device."""
-        self._name: str = raw_device.name
-        self._unique_id: str = raw_device.id
-        self._software_version: str = raw_device.sw_version
-        self._hw_version: str = raw_device.hw_version
-        self._parent_id: str = raw_device.parent_id
+        self._name: str = raw_device['name'] if 'name' in raw_device.keys() else f"Sun {raw_device['id']}"
+        self._unique_id: str = raw_device['id']
+        self._software_version: str = raw_device['sw_version']
+        self._hw_version: str = raw_device['hw_version']
+        self._parent_id: str = raw_device['parent_id'] if 'parent_id' in raw_device.keys() else None
 
     
     @property
@@ -33,7 +34,7 @@ class SunologyAbstractDevice:
     @property
     def via_device(self) -> str:
         """Get the unique id."""
-        return (GEORIDE_DOMAIN, self._parent_id)
+        return {(SUNOLOGY_DOMAIN, self._parent_id)}
 
     
     @property
@@ -55,18 +56,31 @@ class SunologyAbstractDevice:
     @property
     def device_info(self):
         """Return the device info."""
-        dev_info = {
-            "name": self.name,
-            "identifiers": self.unique_id,
-            "manufacturer": self.manufacturer,
-            "sw_version" : self.sw_version,
-            "hw_version": self.hw_version
-        }
+        dev_info = DeviceInfo(
+            name=self.name,
+            identifiers=self.unique_id,
+            manufacturer=self.manufacturer,
+            sw_version= self.sw_version,
+            hw_version=self.hw_version
+        )
 
         if self._parent_id is not None:
-            dev_info['via_device'] = self.unique_id
-
+            dev_info.via_device = {(SUNOLOGY_DOMAIN, self.parent_id)}
         return dev_info
+
+    async def register(self, hass, entry):
+        from homeassistant.helpers import device_registry as dr
+        device_registry = dr.async_get(hass)
+
+        await device_registry.async_get_or_create(
+            config_entry_id=entry.entry_id,
+            name=self.name,
+            identifiers=self.unique_id,
+            manufacturer=self.manufacturer,
+            sw_version= self.sw_version,
+            hw_version=self.hw_version
+        )
+
 
 class SolarEventInterface():
     """Sunology extra porperties for events."""
@@ -160,3 +174,4 @@ class Gateway(SunologyAbstractDevice):
     def __str__(self) -> str:
         """Get string representation."""
         return f"Sunology Device: {self.name}::{self.model_name}::{self.unique_id}"
+

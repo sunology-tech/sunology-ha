@@ -7,5 +7,6 @@
     "dependencies": [],
     "codeowners": ["sunology-tech"],
     "integration_type": "hub",
-    "version": "0.1.4"
-  }
+    "version": "0.1.4",
+    "zeroconf": ["_solarhome._tcp.local."]
+}

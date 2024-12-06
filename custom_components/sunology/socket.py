@@ -92,8 +92,8 @@ class SunologySocket():
                         _LOGGER.warning('Unmanaged event received: %s', message['event'])
             else:
                 _LOGGER.warning('Invalid event received: %s', message)
-        except Exception as e :
-            _LOGGER.warning('Non json event received: %s, %s', message, e.with_traceback())
+        except Exception as err :
+            _LOGGER.warning(f"Non json event received: {message}, {err=}, {type(err)=}")
 
     async def connect(self, lan_host, auth_token):
         """ connect to the sunology socket"""
@@ -145,7 +145,7 @@ class SunologySocket():
             #time.sleep(1)
             _LOGGER.debug('Socket not opened')
             await asyncio.sleep(1)
-        with open('custom_components/sunology/mock_messages.json') as mock_messages_f:
+        with open('/config/custom_components/sunology/mock_messages.json') as mock_messages_f:
             _LOGGER.debug('File opened')
             mock_messages = json.load(mock_messages_f)
             msg_idx = random.randrange(0, len(mock_messages), 1)
@@ -155,4 +155,4 @@ class SunologySocket():
         
     def disconnect(self):
         """disconnect from the sunology socket"""
-        sio.disconnect()
+        #sio.disconnect()

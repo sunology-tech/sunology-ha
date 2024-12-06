@@ -75,6 +75,7 @@ async def async_setup_entry(hass, entry):
     gateway_ip = config.get(CONF_GATEWAY_IP) or entry.data[CONF_GATEWAY_IP]
     context = SunologyContext(
         hass,
+        entry,
         gateway_ip
     )
 
@@ -109,9 +110,10 @@ async def async_remove_config_entry_device(hass, config_entry, device_entry) -> 
 class SunologyContext:
     """Hold the current Sunology context."""
 
-    def __init__(self, hass, gateway_ip):
+    def __init__(self, hass, entry, gateway_ip):
         """Initialize an Sunology context."""
         self._hass = hass
+        self._entry = entry
         self._gateway_ip = gateway_ip
         self._sunology_devices = []
         self._sunology_devices_coordoned = []
@@ -122,7 +124,7 @@ class SunologyContext:
     @property
     def hass(self):
         """ hass """
-        return self._hassr
+        return self._hass
 
     @property
     def gateway_ip(self):
@@ -156,7 +158,7 @@ class SunologyContext:
         self._socket_thread = threading.Thread(target=asyncio.run, args=(socket.connect(f"ws://{self.gateway_ip}/ws", None),))
         self._socket_thread.start()
 
-        oneshot_event_thread = threading.Thread(target=asyncio.run, args=(socket.mock_messages_one_shot(),))
+        oneshot_event_thread = threading.Thread(target=asyncio.run, args=(socket.mock_messages_forever(),))
         oneshot_event_thread.start()
 
 
@@ -198,6 +200,7 @@ class SunologyContext:
         
     
     def add_device_to_coordinator(self, device: SunologyAbstractDevice):
+        update_interval = timedelta(minutes=MIN_UNTIL_REFRESH)
         coordinator = DataUpdateCoordinator[Mapping[str, Any]](
             self._hass,
             _LOGGER,
@@ -211,6 +214,7 @@ class SunologyContext:
             "coordinator": coordinator
         }
         self._sunology_devices_coordoned.append(coordoned_device)
+        return coordinator
 
     async def refresh_devices(self):
         """ here we return last tracker by id"""
@@ -242,15 +246,14 @@ class SunologyContext:
     @callback
     def on_productInfo_callback(self, product_data):
         """on device callback"""
-        _LOGGER.info("On device received")
-
+        _LOGGER.info("On device received '%s'", product_data['product_name'])
         found = False
         for device in self._sunology_devices:
-            if device.unique_id == product_data.id:
+            if device.unique_id == product_data['id']:
                 found = True
         if not found:
             device = None
-            match product_data.product_name:
+            match product_data['product_name']:
                 case "PLAYMax":
                     device = PLAYMax(product_data)
                 case "E-Hub":
@@ -259,7 +262,14 @@ class SunologyContext:
                     _LOGGER.warning("Unmanaged device receive on device_event")
                     device = SunologyAbstractDevice(product_data)
             self._sunology_devices.append(device)
-            self.add_device_to_coordinator(device)
+
+            asyncio.run_coroutine_threadsafe(
+                device.register(self.hass, self._entry), self._hass.loop
+            ).result()
+            
+
+            #device.register(self.hass, self._entry)
+            coordinator = self.add_device_to_coordinator(device)
 
 
     @callback
