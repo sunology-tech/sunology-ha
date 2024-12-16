@@ -32,7 +32,7 @@ class SunologyAbstractDevice:
         return self._name
 
     @property
-    def via_device(self) -> str:
+    def via_device(self):
         """Get the unique id."""
         return {(SUNOLOGY_DOMAIN, self._parent_id)}
 
@@ -89,7 +89,7 @@ class SunologyAbstractDevice:
 
 class SolarEventInterface():
     """Sunology extra porperties for events."""
-    def __init__(self):
+    def __init__(self, raw_device):
         self._pvP = 0
         self._miP = 0
     
@@ -140,8 +140,8 @@ class PLAYMax(SunologyAbstractDevice, SolarEventInterface):
     @property
     def device_info(self):
         dev_info = super().device_info
-        dev_info["model"] = self.model_name
-        dev_info["suggested_area"] =  self.suggested_area
+        dev_info.model = self.model_name
+        dev_info.suggested_area =  self.suggested_area
         return dev_info
 
 
@@ -171,8 +171,8 @@ class Gateway(SunologyAbstractDevice):
     @property
     def device_info(self):
         dev_info = super().device_info
-        dev_info["model"] = self.model_name
-        dev_info["suggested_area"] =  self.suggested_area
+        dev_info.model = self.model_name
+        dev_info.suggested_area =  self.suggested_area
         return dev_info
 
 

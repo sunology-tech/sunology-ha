@@ -100,7 +100,7 @@ class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format('miP')}.{device.unique_id}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format('miP')}.{device.device_id}"# pylint: disable=C0301
         self._state = 0
         self._hass = hass
 
@@ -111,7 +111,7 @@ class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"pvP_{self._device.unique_id}"
+        return f"pvP_{self._device.device_id}"
 
     @property
     def state(self):

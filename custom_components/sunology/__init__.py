@@ -266,9 +266,6 @@ class SunologyContext:
             #asyncio.run_coroutine_threadsafe(
             device.register(self.hass, self._entry) #, self._hass.loop
             #).result()
-            self.hass.add_job(
-                self.hass.config_entries.async_forward_entry_setups, self._entry, ["sensor"]
-            )
             #asyncio.run_coroutine_threadsafe(
             #self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
             #).result() 
