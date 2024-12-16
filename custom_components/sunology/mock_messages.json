@@ -1,6 +1,17 @@
 [
     {"event": "productInfo", "data": {"id": "00:11:22:33:44:55:66","product_name": "PLAYMax","manufacturer_name": "Sunology","sw_version": "2024W47.1","hw_version": 1.4,"rssi": -72, "time": 1688043930}},
     {"event": "productInfo", "data": {"id": "01:11:22:33:44:55:66","product_name": "PLAYMax","manufacturer_name": "Sunology","sw_version": "2024W47.1","hw_version": 1.4,"rssi": -72, "time": 1688043930}},
-    {"event": "productInfo", "data": {"id": "02:11:22:33:44:55:66","product_name": "PLAYMax","manufacturer_name": "Sunology","sw_version": "2024W47.1","hw_version": 1.4,"rssi": -72, "time": 1688043930}}
+    {"event": "productInfo", "data": {"id": "02:11:22:33:44:55:66","product_name": "PLAYMax","manufacturer_name": "Sunology","sw_version": "2024W47.1","hw_version": 1.4,"rssi": -72, "time": 1688043930}},
 
+    {"event": "solarEvent", "data": { "id": "00:11:22:33:44:55:66", "pvP": 100.05, "miP": 88, "batTmp": 21.25, "batP": 12.05, "batPct": 99, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "00:11:22:33:44:55:66", "pvP": 203.05, "miP": 160, "batTmp": 20.25, "batP": 12.05, "batPct": 16, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "00:11:22:33:44:55:66", "pvP": 50.05, "miP": 40.2, "batTmp": 10.25, "batP": 12.05, "batPct": 50, "time": 1688043930}},
+
+    {"event": "solarEvent", "data": { "id": "01:11:22:33:44:55:66", "pvP": 100.05, "miP": 88, "batTmp": 21.25, "batP": 12.05, "batPct": 99, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "01:11:22:33:44:55:66", "pvP": 203.05, "miP": 160, "batTmp": 20.25, "batP": 12.05, "batPct": 16, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "01:11:22:33:44:55:66", "pvP": 50.05, "miP": 40.2, "batTmp": 10.25, "batP": 12.05, "batPct": 50, "time": 1688043930}},
+
+    {"event": "solarEvent", "data": { "id": "02:11:22:33:44:55:66", "pvP": 100.05, "miP": 88, "batTmp": 21.25, "batP": 12.05, "batPct": 99, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "02:11:22:33:44:55:66", "pvP": 203.05, "miP": 160, "batTmp": 20.25, "batP": 12.05, "batPct": 16, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "02:11:22:33:44:55:66", "pvP": 50.05, "miP": 40.2, "batTmp": 10.25, "batP": 12.05, "batPct": 50, "time": 1688043930}}
 ]

@@ -48,7 +48,12 @@ class SunologyAbstractDevice:
         return str(self._hw_version)
 
     @property
-    def unique_id(self) -> str:
+    def device_id(self) -> str:
+        """Get the device unique id."""
+        return self._unique_id
+    
+    @property
+    def unique_id(self):
         """Get the unique id."""
         return {(SUNOLOGY_DOMAIN, self._unique_id)}
 
@@ -68,11 +73,11 @@ class SunologyAbstractDevice:
             dev_info.via_device = {(SUNOLOGY_DOMAIN, self.parent_id)}
         return dev_info
 
-    async def register(self, hass, entry):
+    def register(self, hass, entry):
         from homeassistant.helpers import device_registry as dr
         device_registry = dr.async_get(hass)
 
-        await device_registry.async_get_or_create(
+        device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             name=self.name,
             identifiers=self.unique_id,

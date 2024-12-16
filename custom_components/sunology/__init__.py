@@ -164,7 +164,7 @@ class SunologyContext:
 
 
     async def get_device(self, device_id):
-        """ here we return last tracker by id"""
+        """ here we return last device by id"""
         for device in self._sunology_devices:
             if device.unique_id == device_id:
                 return device
@@ -172,7 +172,7 @@ class SunologyContext:
 
 
     async def init_context(self, hass):
-        """Used to refresh the tracker list"""
+        """Used to refresh the device list"""
         _LOGGER.info("Init_context")
         update_interval = timedelta(minutes=MIN_UNTIL_REFRESH)
 
@@ -217,7 +217,7 @@ class SunologyContext:
         return coordinator
 
     async def refresh_devices(self):
-        """ here we return last tracker by id"""
+        """ here we return last device by id"""
         _LOGGER.debug("Call refresh devices")
         epoch_min = math.floor(time.time()/60)
         if epoch_min != self._previous_refresh:
@@ -249,7 +249,7 @@ class SunologyContext:
         _LOGGER.info("On device received '%s'", product_data['product_name'])
         found = False
         for device in self._sunology_devices:
-            if device.unique_id == product_data['id']:
+            if device.device_id == product_data['id']:
                 found = True
         if not found:
             device = None
@@ -263,10 +263,15 @@ class SunologyContext:
                     device = SunologyAbstractDevice(product_data)
             self._sunology_devices.append(device)
 
-            asyncio.run_coroutine_threadsafe(
-                device.register(self.hass, self._entry), self._hass.loop
-            ).result()
-            
+            #asyncio.run_coroutine_threadsafe(
+            device.register(self.hass, self._entry) #, self._hass.loop
+            #).result()
+            self.hass.add_job(
+                self.hass.config_entries.async_forward_entry_setups, self._entry, ["sensor"]
+            )
+            #asyncio.run_coroutine_threadsafe(
+            #self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
+            #).result() 
 
             #device.register(self.hass, self._entry)
             coordinator = self.add_device_to_coordinator(device)
@@ -278,8 +283,8 @@ class SunologyContext:
         _LOGGER.info("On solarEvent received")
         for coordoned_device in self._sunology_devices_coordoned:
             device = coordoned_device['device']
-            coordinator = coordoned_tracker['coordinator']
-            if device.unique_id == data['id']:
+            coordinator = coordoned_device['coordinator']
+            if device.device_id == data['id']:
                 if isinstance(device, SolarEventInterface):
                     device.solar_event_update(data)
                 else:
@@ -289,8 +294,10 @@ class SunologyContext:
                     "device_id": device.unique_id,
                     "device_name": device.name,
                 }
-                self._hass.bus.async_fire(f"{DOMAIN}_solarEvent", event_data)
-
+                
+                #asyncio.run_coroutine_threadsafe(
+                #    self._hass.bus.async_fire(f"{DOMAIN}_solarEvent", event_data), self._hass.loop
+                #).result()
                 asyncio.run_coroutine_threadsafe(
                     coordinator.async_request_refresh(), self._hass.loop
                 ).result()
