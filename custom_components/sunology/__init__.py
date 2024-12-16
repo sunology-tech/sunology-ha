@@ -263,9 +263,9 @@ class SunologyContext:
                     device = SunologyAbstractDevice(product_data)
             self._sunology_devices.append(device)
 
-            #asyncio.run_coroutine_threadsafe(
-            device.register(self.hass, self._entry) #, self._hass.loop
-            #).result()
+            asyncio.run_coroutine_threadsafe(
+                device.register(self.hass, self._entry) , self._hass.loop
+            ).result()
             #asyncio.run_coroutine_threadsafe(
             #self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
             #).result() 
