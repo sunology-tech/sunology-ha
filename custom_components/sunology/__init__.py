@@ -225,6 +225,7 @@ class SunologyContext:
             ##await self.call_refresh_device() //All iss async, not needed
             #TODO: DELETE-Me mock
             await self._socket.mock_messages_one_shot()
+            device.register(self.hass, self._entry)
 
     @property
     def sunology_devices_coordoned(self):
@@ -263,9 +264,7 @@ class SunologyContext:
                     device = SunologyAbstractDevice(product_data)
             self._sunology_devices.append(device)
 
-            asyncio.run_coroutine_threadsafe(
-                device.register(self.hass, self._entry) , self._hass.loop
-            ).result()
+
             #asyncio.run_coroutine_threadsafe(
             #self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
             #).result() 
