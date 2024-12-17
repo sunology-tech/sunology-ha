@@ -90,6 +90,19 @@ class SunologPvPowerSensorEntity(CoordinatorEntity, SensorEntity):
         """Return the device info."""
         return self._device.device_info
 
+    def register(self, hass, entry):
+        from homeassistant.helpers import entity_registry as er
+        entity_registry = er.async_get(hass)
+
+        entity_registry.async_get_or_create(
+            SUNOLOGY_DOMAIN,
+            self.platform.platform_name,
+            self.unique_id(),
+
+            config_entry_id=entry.entry_id,
+            original_name=self.name
+        )
+
 class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
     """Represent a mipower of a  device."""
 
@@ -138,3 +151,16 @@ class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
     def device_info(self) -> DeviceInfo:
         """Return the device info."""
         return self._device.device_info
+
+    def register(self, hass, entry):
+        from homeassistant.helpers import entity_registry as er
+        entity_registry = er.async_get(hass)
+
+        entity_registry.async_get_or_create(
+            SUNOLOGY_DOMAIN,
+            self.platform.platform_name,
+            self.unique_id(),
+
+            config_entry_id=entry.entry_id,
+            original_name=self.name
+        )

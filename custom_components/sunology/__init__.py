@@ -35,6 +35,11 @@ from .device import (
     SunologyAbstractDevice,
     SolarEventInterface
 )
+from .sensor import(
+    SunologMiPowerSensorEntity,
+    SunologPvPowerSensorEntity
+)
+
 from .const import (
     CONF_GATEWAY_IP,
     MIN_UNTIL_REFRESH,
@@ -223,12 +228,20 @@ class SunologyContext:
         if epoch_min != self._previous_refresh:
             self._previous_refresh = epoch_min
             ##await self.call_refresh_device() //All is async, not needed
+            entities = []
             for device_coordoned in self._sunology_devices_coordoned:
                 device_coordoned['device'].register(self.hass, self._entry)
+                if isinstance(device_coordoned['device'], SolarEventInterface):
+                    entities.append(SunologPvPowerSensorEntity(coordinator, device, hass))
+                    entities.append(SunologMiPowerSensorEntity(coordinator, device, hass))
+            # await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])
+
+            for entity in entities:
+                entity.register(self.hass, self._entry)
 
             #TODO: DELETE-Me mock
             # When calling a blocking function inside Home Assistant
-            await salf.hass.async_add_executor_job(self._socket.mock_messages_one_shot,)
+            await self.hass.async_add_executor_job(self._socket.mock_messages_one_shot)
 
     @property
     def sunology_devices_coordoned(self):

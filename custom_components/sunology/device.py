@@ -24,7 +24,11 @@ class SunologyAbstractDevice:
     def manufacturer(self) -> str:
         """Get the manufacturer."""
         return "Sunology"
-        
+    
+    @property
+    def model_name(self) -> str:
+        """Get the model."""
+        return "Abstract"
 
     @property
     def name(self) -> str:
@@ -65,7 +69,8 @@ class SunologyAbstractDevice:
             name=self.name,
             identifiers=self.unique_id,
             manufacturer=self.manufacturer,
-            sw_version= self.sw_version,
+            model=self.model_name,
+            sw_version=self.sw_version,
             hw_version=self.hw_version
         )
 
@@ -82,9 +87,11 @@ class SunologyAbstractDevice:
             name=self.name,
             identifiers=self.unique_id,
             manufacturer=self.manufacturer,
+            model=self.model_name,
             sw_version= self.sw_version,
             hw_version=self.hw_version
         )
+        
 
 
 class SolarEventInterface():
