@@ -222,10 +222,13 @@ class SunologyContext:
         epoch_min = math.floor(time.time()/60)
         if epoch_min != self._previous_refresh:
             self._previous_refresh = epoch_min
-            ##await self.call_refresh_device() //All iss async, not needed
+            ##await self.call_refresh_device() //All is async, not needed
+            for device_coordoned in self._sunology_devices_coordoned:
+                device_coordoned['device'].register(self.hass, self._entry)
+
             #TODO: DELETE-Me mock
-            await self._socket.mock_messages_one_shot()
-            device.register(self.hass, self._entry)
+            # When calling a blocking function inside Home Assistant
+            await salf.hass.async_add_executor_job(self._socket.mock_messages_one_shot,)
 
     @property
     def sunology_devices_coordoned(self):
