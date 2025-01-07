@@ -133,15 +133,54 @@ class SolarEventInterface():
         self._miP = data['miP']
         self._pvP = data['pvP']
 
+class BatteryEventInterface():
+    """Sunology extra porperties for events."""
+    def __init__(self, raw_device):
+        self._batP = 0
+        self._batPct = 0
+        self._batTmp = 0
+
+    @property
+    def batP(self):
+        """Return the batP value"""
+        return self._batP
+    
+    @property
+    def batPct(self):
+        """Return the batPct value"""
+        return self._batPct
+    
+    @property
+    def batTmp(self):
+        """Return the batTmp value"""
+        return self._batTmp
+    
+    def battery_event_update(self, data):
+        """Return the miP value"""
+        """ 
+            "pvP": 100.05,
+            "miP": 88,
+            "batTmp": 21.25, --> Deprecated
+            "batP": 12.05, --> Deprecated
+            "batPct": 99, --> Deprecated
+            "time": 1688043930 --> Unused
+        """
+
+        self._batP = data['batP']
+        self._batPct = data['batPct']
+        self._batTmp = data['batTmp']
+
     
 
 
-class PLAYMax(SunologyAbstractDevice, SolarEventInterface):
+class PLAYMax(SunologyAbstractDevice, SolarEventInterface, BatteryEventInterface):
     """Home Assistant representation of a Sunology device PLAYMax."""
 
     def __init__(self, raw_playmax):
         """Initialize PLAYMax device."""
         super().__init__(raw_playmax)
+        # super(SolarEventInterface, self).__init__(raw_playmax)
+        # super(BatteryEventInterface, self).__init__(raw_playmax)
 
     @property
     def suggested_area(self) -> str:

@@ -225,32 +225,23 @@ class SunologyContext:
             """ here we return last device by id"""
             _LOGGER.debug("Call refresh devices")
             epoch_min = math.floor(time.time()/60)
-            #if epoch_min != self._previous_refresh:
-            self._previous_refresh = epoch_min
-            ##await self.call_refresh_device() //All is async, not needed
-            entities = []
-            for device_coordoned in self._sunology_devices_coordoned:
-                device_entry = device_coordoned['device'].register(self.hass, self._entry)
-                device_coordoned['device'].device_entry_id =  device_entry.id
-                ##device_coordoned['device_entities'] = []
-                # if isinstance(device_coordoned['device'], SolarEventInterface):
-                #     device_coordoned['device_entities'].append(SunologPvPowerSensorEntity(device_coordoned['coordinator'], device_coordoned['device'], self.hass))
-                #     device_coordoned['device_entities'].append(SunologMiPowerSensorEntity(device_coordoned['coordinator'], device_coordoned['device'], self.hass))
-                # entities.extend(device_coordoned['device_entities'])
-            # await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])
+            if epoch_min != self._previous_refresh:
+                self._previous_refresh = epoch_min
+                ##await self.call_refresh_device() //All is async, not needed
+                entities = []
+                for device_coordoned in self._sunology_devices_coordoned:
+                    device_entry = device_coordoned['device'].register(self.hass, self._entry)
+                    device_coordoned['device'].device_entry_id =  device_entry.id
 
-            for entity in entities:
-                entity.register(self.hass, self._entry)
+                for entity in entities:
+                    entity.register(self.hass, self._entry)
 
+                await self.hass.config_entries.async_forward_entry_unload(self._entry, "sensor")
+                await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
 
-            #asyncio.run_coroutine_threadsafe(
-            await self.hass.config_entries.async_forward_entry_unload(self._entry, "sensor")
-            await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
-            #).result() 
-
-            #TODO: DELETE-Me mock
-            # When calling a blocking function inside Home Assistant
-            await self.hass.async_add_executor_job(self._socket.mock_messages_one_shot)
+                #TODO: DELETE-Me mock
+                # When calling a blocking function inside Home Assistant
+                await self.hass.async_add_executor_job(self._socket.mock_messages_one_shot)
 
     @property
     def sunology_devices_coordoned(self):
@@ -306,17 +297,17 @@ class SunologyContext:
             if device.device_id == data['id']:
                 if isinstance(device, SolarEventInterface):
                     device.solar_event_update(data)
+                    device.battery_event_update(data)
+
                 else:
                     _LOGGER.info("Solar event receive on non solar device")
+                
 
                 event_data = {
                     "device_id": device.unique_id,
                     "device_name": device.name,
                 }
                 
-                #asyncio.run_coroutine_threadsafe(
-                #    self._hass.bus.async_fire(f"{DOMAIN}_solarEvent", event_data), self._hass.loop
-                #).result()
                 asyncio.run_coroutine_threadsafe(
                     coordinator.async_request_refresh(), self._hass.loop
                 ).result()
