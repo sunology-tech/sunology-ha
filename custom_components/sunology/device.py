@@ -1,9 +1,9 @@
 """Home Assistant representation of an Sunology device."""
 from .const import DOMAIN as SUNOLOGY_DOMAIN
-from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntry
 
 
-class SunologyAbstractDevice:
+class SunologyAbstractDevice():
     """Home Assistant representation of a Sunology abstract device."""
 
     def __init__(self, raw_device):
@@ -12,6 +12,7 @@ class SunologyAbstractDevice:
         self._unique_id: str = raw_device['id']
         self._software_version: str = raw_device['sw_version']
         self._hw_version: str = raw_device['hw_version']
+        self._device_entry_id = None
         self._parent_id: str = raw_device['parent_id'] if 'parent_id' in raw_device.keys() else None
 
     
@@ -61,6 +62,14 @@ class SunologyAbstractDevice:
         """Get the unique id."""
         return {(SUNOLOGY_DOMAIN, self._unique_id)}
 
+    @property
+    def device_entry_id(self):
+        return self._device_entry_id
+    
+    @device_entry_id.setter
+    def device_entry_id(self, device_entry_id):
+        """ change auth_token """
+        self._device_entry_id = device_entry_id
     
     @property
     def device_info(self):
@@ -78,11 +87,11 @@ class SunologyAbstractDevice:
             dev_info.via_device = {(SUNOLOGY_DOMAIN, self.parent_id)}
         return dev_info
 
-    def register(self, hass, entry):
+    def register(self, hass, entry) -> DeviceEntry :
         from homeassistant.helpers import device_registry as dr
         device_registry = dr.async_get(hass)
 
-        device_registry.async_get_or_create(
+        return device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             name=self.name,
             identifiers=self.unique_id,
@@ -91,7 +100,7 @@ class SunologyAbstractDevice:
             sw_version= self.sw_version,
             hw_version=self.hw_version
         )
-        
+
 
 
 class SolarEventInterface():
@@ -147,8 +156,6 @@ class PLAYMax(SunologyAbstractDevice, SolarEventInterface):
     @property
     def device_info(self):
         dev_info = super().device_info
-        dev_info.model = self.model_name
-        dev_info.suggested_area =  self.suggested_area
         return dev_info
 
 
@@ -178,8 +185,6 @@ class Gateway(SunologyAbstractDevice):
     @property
     def device_info(self):
         dev_info = super().device_info
-        dev_info.model = self.model_name
-        dev_info.suggested_area =  self.suggested_area
         return dev_info
 
 

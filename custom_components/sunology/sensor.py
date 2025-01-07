@@ -5,6 +5,7 @@ from typing import Any, Mapping
 
 from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
+from homeassistant.helpers import device_registry
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, ENTITY_ID_FORMAT
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
@@ -31,10 +32,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
     for coordoned_device in coordoned_devices:
         device = coordoned_device['device']
         coordinator = coordoned_device['coordinator']
+        coordoned_device['device_entities'] = []
         hass.data[SUNOLOGY_DOMAIN]["devices"][device.unique_id] = coordinator
         if isinstance(device, SolarEventInterface):
-            entities.append(SunologPvPowerSensorEntity(coordinator, device, hass))
-            entities.append(SunologMiPowerSensorEntity(coordinator, device, hass))
+            coordoned_device['device_entities'].append(SunologPvPowerSensorEntity(coordinator, device, hass))
+            coordoned_device['device_entities'].append(SunologMiPowerSensorEntity(coordinator, device, hass))
+        entities.extend(coordoned_device['device_entities'])
 
     async_add_entities(entities)
 
@@ -50,7 +53,7 @@ class SunologPvPowerSensorEntity(CoordinatorEntity, SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format('pvP')}.{device.device_id}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"{SUNOLOGY_DOMAIN}_pvp")}_{device_registry.format_mac(device.device_id).replace(':','_')}"# pylint: disable=C0301
         self._attr_device_info = device.device_info # For automatic device registration
         self._state = 0
         self._hass = hass
@@ -93,14 +96,15 @@ class SunologPvPowerSensorEntity(CoordinatorEntity, SensorEntity):
     def register(self, hass, entry):
         from homeassistant.helpers import entity_registry as er
         entity_registry = er.async_get(hass)
+        #entity_registry.entities.add(self)
 
         entity_registry.async_get_or_create(
+            "sensor",
             SUNOLOGY_DOMAIN,
-            self.platform.platform_name,
-            self.unique_id(),
-
-            config_entry_id=entry.entry_id,
-            original_name=self.name
+            device_registry.format_mac(self.unique_id),
+            config_entry=entry,
+            original_name=self.name,
+            device_id = self._device.device_entry_id
         )
 
 class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
@@ -113,7 +117,7 @@ class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format('miP')}.{device.device_id}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"{SUNOLOGY_DOMAIN}_mip")}_{device_registry.format_mac(device.device_id).replace(':','_')}"# pylint: disable=C0301
         self._state = 0
         self._hass = hass
 
@@ -124,7 +128,7 @@ class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"pvP_{self._device.device_id}"
+        return f"miP_{self._device.device_id}"
 
     @property
     def state(self):
@@ -155,12 +159,14 @@ class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
     def register(self, hass, entry):
         from homeassistant.helpers import entity_registry as er
         entity_registry = er.async_get(hass)
+        _LOGGER.info("Entity id %s", self.entity_id)
+        er.entities.add(self)
 
-        entity_registry.async_get_or_create(
-            SUNOLOGY_DOMAIN,
-            self.platform.platform_name,
-            self.unique_id(),
-
-            config_entry_id=entry.entry_id,
-            original_name=self.name
-        )
+        # entity_registry.async_get_or_create(
+        #     "sensor",
+        #     SUNOLOGY_DOMAIN,
+        #     device_registry.format_mac(self.unique_id),
+        #     config_entry=entry,
+        #     original_name=self.name,
+        #     device_id = self._device.device_entry_id
+        # )

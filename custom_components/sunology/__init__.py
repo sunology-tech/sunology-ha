@@ -222,22 +222,26 @@ class SunologyContext:
         return coordinator
 
     async def refresh_devices(self):
-        """ here we return last device by id"""
-        _LOGGER.debug("Call refresh devices")
-        epoch_min = math.floor(time.time()/60)
-        if epoch_min != self._previous_refresh:
+            """ here we return last device by id"""
+            _LOGGER.debug("Call refresh devices")
+            epoch_min = math.floor(time.time()/60)
+            #if epoch_min != self._previous_refresh:
             self._previous_refresh = epoch_min
             ##await self.call_refresh_device() //All is async, not needed
             entities = []
             for device_coordoned in self._sunology_devices_coordoned:
-                device_coordoned['device'].register(self.hass, self._entry)
+                device_entry = device_coordoned['device'].register(self.hass, self._entry)
+                device_coordoned['device'].device_entry_id =  device_entry.id
+                device_coordoned['device_entities'] = []
                 if isinstance(device_coordoned['device'], SolarEventInterface):
-                    entities.append(SunologPvPowerSensorEntity(coordinator, device, hass))
-                    entities.append(SunologMiPowerSensorEntity(coordinator, device, hass))
+                    device_coordoned['device_entities'].append(SunologPvPowerSensorEntity(device_coordoned['coordinator'], device_coordoned['device'], self.hass))
+                    device_coordoned['device_entities'].append(SunologMiPowerSensorEntity(device_coordoned['coordinator'], device_coordoned['device'], self.hass))
+                entities.extend(device_coordoned['device_entities'])
             # await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])
 
             for entity in entities:
                 entity.register(self.hass, self._entry)
+
 
             #TODO: DELETE-Me mock
             # When calling a blocking function inside Home Assistant
