@@ -232,16 +232,21 @@ class SunologyContext:
             for device_coordoned in self._sunology_devices_coordoned:
                 device_entry = device_coordoned['device'].register(self.hass, self._entry)
                 device_coordoned['device'].device_entry_id =  device_entry.id
-                device_coordoned['device_entities'] = []
-                if isinstance(device_coordoned['device'], SolarEventInterface):
-                    device_coordoned['device_entities'].append(SunologPvPowerSensorEntity(device_coordoned['coordinator'], device_coordoned['device'], self.hass))
-                    device_coordoned['device_entities'].append(SunologMiPowerSensorEntity(device_coordoned['coordinator'], device_coordoned['device'], self.hass))
-                entities.extend(device_coordoned['device_entities'])
+                ##device_coordoned['device_entities'] = []
+                # if isinstance(device_coordoned['device'], SolarEventInterface):
+                #     device_coordoned['device_entities'].append(SunologPvPowerSensorEntity(device_coordoned['coordinator'], device_coordoned['device'], self.hass))
+                #     device_coordoned['device_entities'].append(SunologMiPowerSensorEntity(device_coordoned['coordinator'], device_coordoned['device'], self.hass))
+                # entities.extend(device_coordoned['device_entities'])
             # await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])
 
             for entity in entities:
                 entity.register(self.hass, self._entry)
 
+
+            #asyncio.run_coroutine_threadsafe(
+            await self.hass.config_entries.async_forward_entry_unload(self._entry, "sensor")
+            await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
+            #).result() 
 
             #TODO: DELETE-Me mock
             # When calling a blocking function inside Home Assistant
@@ -285,9 +290,7 @@ class SunologyContext:
             self._sunology_devices.append(device)
 
 
-            #asyncio.run_coroutine_threadsafe(
-            #self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
-            #).result() 
+            
 
             #device.register(self.hass, self._entry)
             coordinator = self.add_device_to_coordinator(device)

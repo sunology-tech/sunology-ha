@@ -131,7 +131,7 @@ class SolarEventInterface():
         """
 
         self._miP = data['miP']
-        self._miP = data['pvP']
+        self._pvP = data['pvP']
 
     
 

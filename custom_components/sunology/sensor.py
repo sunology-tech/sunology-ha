@@ -28,12 +28,14 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
     sunology_context = hass.data[SUNOLOGY_DOMAIN]["context"]
     coordoned_devices = sunology_context.sunology_devices_coordoned
 
+    _LOGGER.info("On passe ici dans sensor")
+
     entities = []
     for coordoned_device in coordoned_devices:
         device = coordoned_device['device']
         coordinator = coordoned_device['coordinator']
         coordoned_device['device_entities'] = []
-        hass.data[SUNOLOGY_DOMAIN]["devices"][device.unique_id] = coordinator
+        hass.data[SUNOLOGY_DOMAIN]["devices"][device.device_id] = coordinator
         if isinstance(device, SolarEventInterface):
             coordoned_device['device_entities'].append(SunologPvPowerSensorEntity(coordinator, device, hass))
             coordoned_device['device_entities'].append(SunologMiPowerSensorEntity(coordinator, device, hass))
@@ -49,6 +51,8 @@ class SunologPvPowerSensorEntity(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
                  device:SunologyAbstractDevice, hass):
         """Set up SunologPvPowerSensor entity."""
+        _LOGGER.info("On pass ici dans sensor 2")
+
         super().__init__(coordinator)
         self._device = device
         self._name = device.name
@@ -94,18 +98,19 @@ class SunologPvPowerSensorEntity(CoordinatorEntity, SensorEntity):
         return self._device.device_info
 
     def register(self, hass, entry):
-        from homeassistant.helpers import entity_registry as er
-        entity_registry = er.async_get(hass)
-        #entity_registry.entities.add(self)
+        pass
+        # from homeassistant.helpers import entity_registry as er
+        # entity_registry = er.async_get(hass)
+        # entity_registry.entities.add(self)
 
-        entity_registry.async_get_or_create(
-            "sensor",
-            SUNOLOGY_DOMAIN,
-            device_registry.format_mac(self.unique_id),
-            config_entry=entry,
-            original_name=self.name,
-            device_id = self._device.device_entry_id
-        )
+        # entity_registry.async_get_or_create(
+        #     "sensor",
+        #     SUNOLOGY_DOMAIN,
+        #     device_registry.format_mac(self.unique_id),
+        #     config_entry=entry,
+        #     original_name=self.name,
+        #     device_id = self._device.device_entry_id
+        # )
 
 class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
     """Represent a mipower of a  device."""
@@ -157,10 +162,11 @@ class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
         return self._device.device_info
 
     def register(self, hass, entry):
-        from homeassistant.helpers import entity_registry as er
-        entity_registry = er.async_get(hass)
-        _LOGGER.info("Entity id %s", self.entity_id)
-        er.entities.add(self)
+        pass
+        # from homeassistant.helpers import entity_registry as er
+        # entity_registry = er.async_get(hass)
+        # _LOGGER.info("Entity id %s", self.entity_id)
+        # er.entities.add(self)
 
         # entity_registry.async_get_or_create(
         #     "sensor",
