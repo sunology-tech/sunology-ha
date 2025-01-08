@@ -1,17 +1,48 @@
 [
-    {"event": "productInfo", "data": {"id": "00:11:22:33:44:55:66","product_name": "PLAYMax","manufacturer_name": "Sunology","sw_version": "2024W47.1","hw_version": 1.4,"rssi": -72, "time": 1688043930}},
-    {"event": "productInfo", "data": {"id": "01:11:22:33:44:55:66","product_name": "PLAYMax","manufacturer_name": "Sunology","sw_version": "2024W47.1","hw_version": 1.4,"rssi": -72, "time": 1688043930}},
-    {"event": "productInfo", "data": {"id": "02:11:22:33:44:55:66","product_name": "PLAYMax","manufacturer_name": "Sunology","sw_version": "2024W47.1","hw_version": 1.4,"rssi": -72, "time": 1688043930}},
+    {"event": "productInfo", "data": {"id": "00:00:22:33:44:55:66", "product_name": "EHub",     "manufacturer_name": "Sunology","sw_version": "2024W47.1", "hw_version": 1.0,"rssi": -72, "time": 1688043930}},
 
-    {"event": "solarEvent", "data": { "id": "00:11:22:33:44:55:66", "pvP": 100.05, "miP": 88, "batTmp": 21.25, "batP": 12.05, "batPct": 99, "time": 1688043930}},
-    {"event": "solarEvent", "data": { "id": "00:11:22:33:44:55:66", "pvP": 203.05, "miP": 160, "batTmp": 20.25, "batP": 12.05, "batPct": 16, "time": 1688043930}},
-    {"event": "solarEvent", "data": { "id": "00:11:22:33:44:55:66", "pvP": 50.05, "miP": 40.2, "batTmp": 10.25, "batP": 12.05, "batPct": 50, "time": 1688043930}},
+    {"event": "productInfo", "data": {"id": "00:11:22:33:44:55:66", "product_name": "PLAYMax",  "manufacturer_name": "Sunology","sw_version": "2024W47.1","hw_version": 1.4,"rssi": -72, "time": 1688043930}},
+    {"event": "productInfo", "data": {"id": "01:11:22:33:44:55:66", "product_name": "PLAYMax",  "manufacturer_name": "Sunology","sw_version": "2024W47.1","hw_version": 1.4,"rssi": -72, "time": 1688043930}},
+    {"event": "productInfo", "data": {"id": "02:11:22:33:44:55:66", "product_name": "PLAYMax",  "manufacturer_name": "Sunology","sw_version": "2024W47.1","hw_version": 1.4,"rssi": -72, "time": 1688043930}},
+    
+    {"event": "productInfo", "data": {"id": "00:12:22:33:44:55:66", "product_name": "PLAY",     "manufacturer_name": "Sunology","sw_version": "V6.1.11","hw_version": 2.0, "rssi": -72, "time": 1688043930}},
+    {"event": "productInfo", "data": {"id": "01:12:22:33:44:55:66", "product_name": "PLAY",     "manufacturer_name": "Sunology","sw_version": "V6.1.11","hw_version": 2.0, "rssi": -72, "time": 1688043930}},
+    {"event": "productInfo", "data": {"id": "02:12:22:33:44:55:66", "product_name": "PLAY",     "manufacturer_name": "Sunology","sw_version": "V6.1.11","hw_version": 2.0, "rssi": -72, "time": 1688043930}},
+    
+    {"event": "productInfo", "data": {"id": "02:00:22:33:44:55:66", "product_name": "Storey",   "manufacturer_name": "Sunology", "sw_version": "2024W47.1", "hw_version": 1.0,  "rssi": -72, "connection_type": "Websocket", "time": 1688043930, "hardware_configuration": { "packs": [ { "packIndex": 0, "capacity": 2200, "maxInput": 500,   "maxOutput": 500  }, { "packIndex": 1, "capacity": 2200, "maxInput": 500,   "maxOutput": 500  }, { "packIndex": 2, "capacity": 2200, "maxInput": 500,   "maxOutput": 500  } ]}}},
+    
+    {"event": "solarEvent", "data": { "id": "00:11:22:33:44:55:66", "pvP": 135.5,   "miP": 332.2,   "batTmp": 21.37, "batP": -101.4,"batPct": 65, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "00:11:22:33:44:55:66", "pvP": 244.8,   "miP": 83.8,    "batTmp": 26.05, "batP": 119.1, "batPct": 30, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "00:11:22:33:44:55:66", "pvP": 243.0,   "miP": 210.2,   "batTmp": 21.41, "batP": 50.5,  "batPct": 34, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "01:11:22:33:44:55:66", "pvP": 74.6,    "miP": 319.1,   "batTmp": 18.83, "batP": -56.4, "batPct": 87, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "01:11:22:33:44:55:66", "pvP": 99.9,    "miP": 96.7,    "batTmp": 16.60, "batP": 119.6, "batPct": 38, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "01:11:22:33:44:55:66", "pvP": 389.4,   "miP": 285.7,   "batTmp": 15.04, "batP": -27.9, "batPct": 83, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "02:11:22:33:44:55:66", "pvP": 104.6,   "miP": 157.6,   "batTmp": 24.59, "batP": -31.4, "batPct": 70, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "02:11:22:33:44:55:66", "pvP": 4.2,     "miP": 151.9,   "batTmp": 14.90, "batP": -55.6, "batPct": 61, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "02:11:22:33:44:55:66", "pvP": 196.1,   "miP": 120.2,   "batTmp": 16.93, "batP": -91.7, "batPct": 89, "time": 1688043930}},
 
-    {"event": "solarEvent", "data": { "id": "01:11:22:33:44:55:66", "pvP": 100.05, "miP": 88, "batTmp": 21.25, "batP": 12.05, "batPct": 99, "time": 1688043930}},
-    {"event": "solarEvent", "data": { "id": "01:11:22:33:44:55:66", "pvP": 203.05, "miP": 160, "batTmp": 20.25, "batP": 12.05, "batPct": 16, "time": 1688043930}},
-    {"event": "solarEvent", "data": { "id": "01:11:22:33:44:55:66", "pvP": 50.05, "miP": 40.2, "batTmp": 10.25, "batP": 12.05, "batPct": 50, "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "00:12:22:33:44:55:66", "pvP": 229.1,   "miP": 49.2,    "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "00:12:22:33:44:55:66", "pvP": 318.1,   "miP": 147.6,   "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "00:12:22:33:44:55:66", "pvP": 332.0,   "miP": 269.4,   "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "01:12:22:33:44:55:66", "pvP": 403.1,   "miP": 190.9,   "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "01:12:22:33:44:55:66", "pvP": 178.9,   "miP": 276.5,   "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "01:12:22:33:44:55:66", "pvP": 416.6,   "miP": 64.6,    "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "02:12:22:33:44:55:66", "pvP": 422.5,   "miP": 351.7,   "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "02:12:22:33:44:55:66", "pvP": 230.7,   "miP": 64.0,    "time": 1688043930}},
+    {"event": "solarEvent", "data": { "id": "02:12:22:33:44:55:66", "pvP": 286.7,   "miP": 103.6,   "time": 1688043930}},
 
-    {"event": "solarEvent", "data": { "id": "02:11:22:33:44:55:66", "pvP": 100.05, "miP": 88, "batTmp": 21.25, "batP": 12.05, "batPct": 99, "time": 1688043930}},
-    {"event": "solarEvent", "data": { "id": "02:11:22:33:44:55:66", "pvP": 203.05, "miP": 160, "batTmp": 20.25, "batP": 12.05, "batPct": 16, "time": 1688043930}},
-    {"event": "solarEvent", "data": { "id": "02:11:22:33:44:55:66", "pvP": 50.05, "miP": 40.2, "batTmp": 10.25, "batP": 12.05, "batPct": 50, "time": 1688043930}}
+    {"event":"batteryEvent","data":{"id":"02:00:22:33:44:55:66","power":234.03,"pct":48,"packs":[{"packIndex":0,"batTmp":7.2,"batP":144.64,"batPct":63},{"packIndex":1,"batTmp":5.01,"batP":419.14,"batPct":62},{"packIndex":2,"batTmp":6.05,"batP":-329.75,"batPct":18}],"time":1673146222}},
+    {"event":"batteryEvent","data":{"id":"02:00:22:33:44:55:66","power":-94.53,"pct":48,"packs":[{"packIndex":0,"batTmp":15.88,"batP":205.67,"batPct":43},{"packIndex":1,"batTmp":5.94,"batP":-467.78,"batPct":47},{"packIndex":2,"batTmp":10.57,"batP":167.58,"batPct":54}],"time":1692795446}},
+    {"event":"batteryEvent","data":{"id":"02:00:22:33:44:55:66","power":-94.65,"pct":69,"packs":[{"packIndex":0,"batTmp":15.16,"batP":-41.7,"batPct":92},{"packIndex":1,"batTmp":5.23,"batP":257.02,"batPct":86},{"packIndex":2,"batTmp":21.33,"batP":-309.97,"batPct":30}],"time":1689833030}},
+    {"event":"batteryEvent","data":{"id":"02:00:22:33:44:55:66","power":39.72,"pct":56,"packs":[{"packIndex":0,"batTmp":14.28,"batP":-312.5,"batPct":47},{"packIndex":1,"batTmp":9.74,"batP":166.2,"batPct":100},{"packIndex":2,"batTmp":13.02,"batP":186.02,"batPct":20}],"time":1616863327}},
+    {"event":"batteryEvent","data":{"id":"02:00:22:33:44:55:66","power":-728.08,"pct":23,"packs":[{"packIndex":0,"batTmp":12.96,"batP":-222.85,"batPct":53},{"packIndex":1,"batTmp":12.43,"batP":-100.09,"batPct":15},{"packIndex":2,"batTmp":8.78,"batP":-405.14,"batPct":0}],"time":1667682439}},
+    {"event":"batteryEvent","data":{"id":"02:00:22:33:44:55:66","power":-31.87,"pct":82,"packs":[{"packIndex":0,"batTmp":14.89,"batP":-52.56,"batPct":88},{"packIndex":1,"batTmp":7.36,"batP":-329.98,"batPct":81},{"packIndex":2,"batTmp":23.71,"batP":350.67,"batPct":77}],"time":1670348452}},
+    {"event":"batteryEvent","data":{"id":"02:00:22:33:44:55:66","power":-114.52,"pct":53,"packs":[{"packIndex":0,"batTmp":19.71,"batP":-21.87,"batPct":5},{"packIndex":1,"batTmp":18.16,"batP":90.76,"batPct":69},{"packIndex":2,"batTmp":19.63,"batP":-183.41,"batPct":85}],"time":1645360484}},
+    {"event":"batteryEvent","data":{"id":"02:00:22:33:44:55:66","power":611.55,"pct":29,"packs":[{"packIndex":0,"batTmp":11.01,"batP":-94.41,"batPct":14},{"packIndex":1,"batTmp":15.84,"batP":397.62,"batPct":38},{"packIndex":2,"batTmp":12.51,"batP":308.34,"batPct":36}],"time":1630620612}},
+    {"event":"batteryEvent","data":{"id":"02:00:22:33:44:55:66","power":-697.61,"pct":42,"packs":[{"packIndex":0,"batTmp":8.25,"batP":235.66,"batPct":30},{"packIndex":1,"batTmp":13.07,"batP":-481.38,"batPct":63},{"packIndex":2,"batTmp":9.74,"batP":-451.89,"batPct":32}],"time":1627935846}},
+    {"event":"batteryEvent","data":{"id":"02:00:22:33:44:55:66","power":576.26,"pct":45,"packs":[{"packIndex":0,"batTmp":8.07,"batP":-116.46,"batPct":27},{"packIndex":1,"batTmp":21.22,"batP":326.74,"batPct":38},{"packIndex":2,"batTmp":9.48,"batP":365.98,"batPct":70}],"time":1636715258}}
 ]
+
+
+  
+  

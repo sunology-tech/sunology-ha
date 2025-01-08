@@ -31,9 +31,13 @@ import threading
 from .socket import SunologySocket
 from .device import (
     PLAYMax,
+    PLAY,
     Gateway,
+    StoreyMaster,
+    StoreyPack,
     SunologyAbstractDevice,
-    SolarEventInterface
+    SolarEventInterface,
+    BatteryEventInterface
 )
 from .sensor import(
     SunologMiPowerSensorEntity,
@@ -202,6 +206,10 @@ class SunologyContext:
             }
             self._sunology_devices_coordoned.append(coordoned_device)
         
+    
+    def add_devices_to_coordinator(self, devices):
+        for device in devices:
+            self.add_device_to_coordinator(device)
         
     
     def add_device_to_coordinator(self, device: SunologyAbstractDevice):
@@ -269,22 +277,35 @@ class SunologyContext:
             if device.device_id == product_data['id']:
                 found = True
         if not found:
-            device = None
+            devices = []
             match product_data['product_name']:
                 case "PLAYMax":
-                    device = PLAYMax(product_data)
-                case "E-Hub":
-                    device = Gateway(product_data)
+                    devices.append(PLAYMax(product_data))
+                case "PLAY":
+                    devices.append(PLAY(product_data))
+                case "EHub":
+                    devices.append(Gateway(product_data))
+                case "Storey":
+                    master = StoreyMaster(product_data)
+                    for pack in product_data['hardware_configuration']['packs']:
+                        if pack['packIndex'] == 0:
+                            master.capacity = pack['capacity']
+                            master.maxInput = pack['maxInput']
+                            master.maxOutput = pack['maxOutput']
+                        else:
+                            st_pack = StoreyPack(product_data, pack['packIndex'])
+                            st_pack.capacity = pack['capacity']
+                            st_pack.maxInput = pack['maxInput']
+                            st_pack.maxOutput = pack['maxOutput']
+                            devices.append(st_pack)
+
+                    devices.append(master)
+
                 case _:
                     _LOGGER.warning("Unmanaged device receive on device_event")
-                    device = SunologyAbstractDevice(product_data)
-            self._sunology_devices.append(device)
-
-
-            
-
-            #device.register(self.hass, self._entry)
-            coordinator = self.add_device_to_coordinator(device)
+                    devices.append(SunologyAbstractDevice(product_data))
+            self._sunology_devices.extend(devices)
+            coordinator = self.add_devices_to_coordinator(devices)
 
 
     @callback
@@ -297,6 +318,7 @@ class SunologyContext:
             if device.device_id == data['id']:
                 if isinstance(device, SolarEventInterface):
                     device.solar_event_update(data)
+                if isinstance(device, BatteryEventInterface):
                     device.battery_event_update(data)
 
                 else:
@@ -317,6 +339,29 @@ class SunologyContext:
     def on_batteryEvent_callback(self, data):
         """on batteryEvent callback"""
         _LOGGER.info("On batteryEvent received")
+        for coordoned_device in self._sunology_devices_coordoned:
+            device = coordoned_device['device']
+            coordinator = coordoned_device['coordinator']
+            if device.device_id == data['id']:
+                if isinstance(device, StoreyMaster):
+                    device.percent = data['pct']
+                    device.power = data['power']
+                    for pack in data['packs']:
+                        if pack['packIndex'] == 0:
+                            device.battery_event_update(pack)
+                        else:
+                            for sub_coordoned_device in self._sunology_devices_coordoned:
+                                sub_device = sub_coordoned_device['device']
+                                if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":
+                                    sub_device.battery_event_update(pack)
+                                    break
+                else:
+                    _LOGGER.info("Solar event receive on non storey master device")
+                            
+                asyncio.run_coroutine_threadsafe(
+                    coordinator.async_request_refresh(), self._hass.loop
+                ).result()
+                break
 
     
     @callback
