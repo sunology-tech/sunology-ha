@@ -268,7 +268,9 @@ class SunologyContext:
         found = False
         for device in self._sunology_devices:
             if device.device_id == product_data['id']:
+                device.update_product(product_data)
                 found = True
+                break
         if not found:
             devices = []
             match product_data['product_name']:

@@ -4,6 +4,7 @@ import logging
 from typing import Any, Mapping
 
 from homeassistant.core import callback
+from homeassistant.const import EntityCategory
 from homeassistant.helpers.entity import DeviceInfo, EntityCategory
 from homeassistant.helpers import device_registry
 from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, SensorStateClass, ENTITY_ID_FORMAT
@@ -64,8 +65,8 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
             coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
             coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
             coordoned_device['device_entities'].append(SunologyElectricityFrequencySensorEntity(coordinator, device, hass))
+        coordoned_device['device_entities'].append(SunologyRssiSensorEntity(coordinator, device, hass))
 
-            SunologyElectricityFrequencySensorEntity
 
         entities.extend(coordoned_device['device_entities'])
 
@@ -826,3 +827,63 @@ class SunologyElectricityFrequencySensorEntity(CoordinatorEntity, SensorEntity):
     def device_class(self):
         """ Entity device_class """
         return SensorDeviceClass.FREQUENCY
+
+
+class SunologyRssiSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologBatteryPowerSensor entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "dB"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"rssi")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = 0
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"rssi_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        prod_tot = self._device.rssi
+        return prod_tot
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} Rssi"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:signal"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.SIGNAL_STRENGTH
+
+    @property
+    def entity_category(self):
+        """ Entity entity_category """
+        return EntityCategory.DIAGNOSTIC

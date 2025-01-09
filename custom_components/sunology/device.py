@@ -14,6 +14,7 @@ class SunologyAbstractDevice():
         self._device_entry_id = None
         self._parent_id: str = raw_device['parent_id'] if 'parent_id' in raw_device.keys() else None
         self._name: str = raw_device['name'] if 'name' in raw_device.keys() else f"{self.model_name} {self.device_id}"
+        self._rssi: int = raw_device['rssi'] if 'rssi' in raw_device.keys() else 0
 
     
     @property
@@ -69,6 +70,18 @@ class SunologyAbstractDevice():
     def device_entry_id(self, device_entry_id):
         """ change auth_token """
         self._device_entry_id = device_entry_id
+
+    @property
+    def rssi(self):
+        return self._rssi
+
+    def update_product(self, raw_event):
+        if 'rssi' in raw_event.keys():
+            self._rssi = raw_event['rssi']
+        
+        if 'sw_version' in raw_event.keys():
+            self._software_version = raw_event['sw_version']
+
     
     @property
     def device_info(self):
@@ -385,7 +398,7 @@ class SmartMeter_3P(SunologyAbstractDevice):
     def __init__(self, raw_smartmeter):
         """Initialize SmartMeter_3 device."""
         super().__init__(raw_smartmeter)
-        self._freq = 0,
+        self._freq = 0
         self._electrical_data = {
             SmartMeterPhase.ALL:       SmartMeter_ElectricalData(),
             SmartMeterPhase.PHASE_1:   SmartMeter_ElectricalData(),
