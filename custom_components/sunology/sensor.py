@@ -1,4 +1,4 @@
-""" odometter sensor for GeoRide object """
+""" sensor for Sunology objects """
 
 import logging
 from typing import Any, Mapping
@@ -12,7 +12,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import SmartMetterPhase, PACKAGE_NAME, DOMAIN as SUNOLOGY_DOMAIN
+from .const import SmartMeterPhase, PACKAGE_NAME, DOMAIN as SUNOLOGY_DOMAIN
 from .device import (
     PLAYMax,
     Gateway,
@@ -20,7 +20,7 @@ from .device import (
     SunologyAbstractDevice,
     SolarEventInterface,
     BatteryEventInterface,
-    SmartMetter_3P
+    SmartMeter_3P
 )
 
 _LOGGER = logging.getLogger(PACKAGE_NAME) 
@@ -50,19 +50,19 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
             coordoned_device['device_entities'].append(SunologyBatteryMasterSocSensorEntity(coordinator, device, hass))
             coordoned_device['device_entities'].append(SunologyBatteryMasterPowerSensorEntity(coordinator, device, hass))
         
-        if isinstance(device, SmartMetter_3P):
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMetterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMetterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMetterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMetterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMetterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMetterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMetterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMetterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMetterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMetterPhase.PHASE_3, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMetterPhase.PHASE_3, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMetterPhase.PHASE_3, hass))
+        if isinstance(device, SmartMeter_3P):
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
             coordoned_device['device_entities'].append(SunologyElectricityFrequencySensorEntity(coordinator, device, hass))
 
             SunologyElectricityFrequencySensorEntity
@@ -589,7 +589,7 @@ class SunologyElectricalDataSensorEntity_Power(CoordinatorEntity, SensorEntity):
     """Represent a mipower of a  device."""
 
     def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, phase:SmartMetterPhase, hass):
+                 device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
         """Set up SunologBatteryPowerSensor entity."""
         super().__init__(coordinator)
         self._device = device
@@ -657,7 +657,7 @@ class SunologyElectricalDataSensorEntity_TotalExport(CoordinatorEntity, SensorEn
     """Represent a mipower of a  device."""
 
     def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, phase:SmartMetterPhase, hass):
+                 device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
         """Set up SunologBatteryPowerSensor entity."""
         super().__init__(coordinator)
         self._device = device
@@ -717,7 +717,7 @@ class SunologyElectricalDataSensorEntity_TotalImport(CoordinatorEntity, SensorEn
     """Represent a mipower of a  device."""
 
     def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, phase:SmartMetterPhase, hass):
+                 device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
         """Set up SunologBatteryPowerSensor entity."""
         super().__init__(coordinator)
         self._device = device

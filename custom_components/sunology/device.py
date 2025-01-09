@@ -1,5 +1,5 @@
 """Home Assistant representation of an Sunology device."""
-from .const import SmartMetterPhase, DOMAIN as SUNOLOGY_DOMAIN
+from .const import SmartMeterPhase, DOMAIN as SUNOLOGY_DOMAIN
 from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntry
 from typing import List
 
@@ -322,11 +322,11 @@ class PLAYMax(SunologyAbstractDevice, SolarEventInterface, BatteryEventInterface
         """Get string representation."""
         return f"Sunology Device: {self.name}::{self.model_name}::{self.unique_id}"
 
-class SmartMetter_ElectricalData():
-    """Home Assistant representation of a Sunology SmartMetter_electrical_data property."""
+class SmartMeter_ElectricalData():
+    """Home Assistant representation of a Sunology SmartMeter_electrical_data property."""
 
     def __init__(self, current=0, voltage=0, power_factor=0, power=0, conso_tot=0, prod_tot=0):
-        """Initialize SmartMetter_electrical_data property."""
+        """Initialize SmartMeter_electrical_data property."""
         self._current = current
         self._voltage = voltage
         self._power_factor = power_factor
@@ -365,26 +365,32 @@ class SmartMetter_ElectricalData():
         return self._prod_tot
     
     def update_electrical_data(self, raw_electrical_data):
-        self._current = raw_electrical_data['current']
-        self._voltage = raw_electrical_data['voltage']
-        self._power_factor = raw_electrical_data['power_factor']
-        self._power = raw_electrical_data['power']
-        self._conso_tot = raw_electrical_data['conso_tot']
-        self._prod_tot = raw_electrical_data['prod_tot']
+        if 'current' in raw_electrical_data.keys():
+            self._current = raw_electrical_data['current']
+        if 'voltage' in raw_electrical_data.keys():
+            self._voltage = raw_electrical_data['voltage']
+        if 'power_factor' in raw_electrical_data.keys():
+            self._power_factor = raw_electrical_data['power_factor']
+        if 'power' in raw_electrical_data.keys():
+            self._power = raw_electrical_data['power']
+        if 'conso_tot' in raw_electrical_data.keys():
+            self._conso_tot = raw_electrical_data['conso_tot']
+        if 'prod_tot' in raw_electrical_data.keys():
+            self._prod_tot = raw_electrical_data['prod_tot']
 
 
-class SmartMetter_3P(SunologyAbstractDevice):
-    """Home Assistant representation of a Sunology device SmartMetter."""
+class SmartMeter_3P(SunologyAbstractDevice):
+    """Home Assistant representation of a Sunology device Smart."""
 
-    def __init__(self, raw_smartmetter):
-        """Initialize SmartMetter_3 device."""
-        super().__init__(raw_smartmetter)
+    def __init__(self, raw_smartmeter):
+        """Initialize SmartMeter_3 device."""
+        super().__init__(raw_smartmeter)
         self._freq = 0,
         self._electrical_data = {
-            SmartMetterPhase.ALL:       SmartMetter_ElectricalData(),
-            SmartMetterPhase.PHASE_1:   SmartMetter_ElectricalData(),
-            SmartMetterPhase.PHASE_2:   SmartMetter_ElectricalData(),
-            SmartMetterPhase.PHASE_3:   SmartMetter_ElectricalData()
+            SmartMeterPhase.ALL:       SmartMeter_ElectricalData(),
+            SmartMeterPhase.PHASE_1:   SmartMeter_ElectricalData(),
+            SmartMeterPhase.PHASE_2:   SmartMeter_ElectricalData(),
+            SmartMeterPhase.PHASE_3:   SmartMeter_ElectricalData()
         }
 
     @property
@@ -395,7 +401,7 @@ class SmartMetter_3P(SunologyAbstractDevice):
     @property
     def model_name(self) -> str:
         """Get the model name."""
-        return "STREAM Metter"
+        return "STREAM Meter"
     
     @property
     def device_info(self):
@@ -416,13 +422,13 @@ class SmartMetter_3P(SunologyAbstractDevice):
         if "freq" in raw_grid_event.keys():
             self._freq = raw_grid_event['freq']
         if "electrical_data" in raw_grid_event.keys():
-            self.electrical_data[SmartMetterPhase.ALL].update_electrical_data(raw_grid_event['electrical_data'])
+            self.electrical_data[SmartMeterPhase.ALL].update_electrical_data(raw_grid_event['electrical_data'])
         if "electrical_data_p1" in raw_grid_event.keys():
-            self.electrical_data[SmartMetterPhase.PHASE_1].update_electrical_data(raw_grid_event['electrical_data_p1'])
+            self.electrical_data[SmartMeterPhase.PHASE_1].update_electrical_data(raw_grid_event['electrical_data_p1'])
         if "electrical_data_p2" in raw_grid_event.keys():
-            self.electrical_data[SmartMetterPhase.PHASE_2].update_electrical_data(raw_grid_event['electrical_data_p2'])
+            self.electrical_data[SmartMeterPhase.PHASE_2].update_electrical_data(raw_grid_event['electrical_data_p2'])
         if "electrical_data_p3" in raw_grid_event.keys():
-            self.electrical_data[SmartMetterPhase.PHASE_3].update_electrical_data(raw_grid_event['electrical_data_p3'])
+            self.electrical_data[SmartMeterPhase.PHASE_3].update_electrical_data(raw_grid_event['electrical_data_p3'])
 
     def __str__(self) -> str:
         """Get string representation."""

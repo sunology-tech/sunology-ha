@@ -12,7 +12,7 @@
     {"event": "productInfo", "data": {"id": "02:00:22:33:44:55:66", "product_name": "Storey",   "manufacturer_name": "Sunology", "sw_version": "2024W47.1", "hw_version": 1.0,  "rssi": -72, "connection_type": "Websocket", "time": 1688043930, "hardware_configuration": { "packs": [ { "packIndex": 0, "capacity": 2200, "maxInput": 500,   "maxOutput": 500  }, { "packIndex": 1, "capacity": 2200, "maxInput": 500,   "maxOutput": 500  }, { "packIndex": 2, "capacity": 2200, "maxInput": 500,   "maxOutput": 500  } ]}}},
     
 
-    {"event": "productInfo", "data": {"id": "1218148967", "product_name": "SmartMetter",    "manufacturer_name": "Sunology","sw_version": "V2.1.17","hw_version": 1.0, "rssi": -72, "time": 1688043930}},
+    {"event": "productInfo", "data": {"id": "1218148967", "product_name": "SmartMeter",    "manufacturer_name": "Sunology","sw_version": "V2.1.17","hw_version": 1.0, "rssi": -72, "time": 1688043930}},
 
 
     {"event": "solarEvent", "data": { "id": "00:11:22:33:44:55:66", "pvP": 135.5,   "miP": 332.2,   "batTmp": 21.37, "batP": -101.4,"batPct": 65, "time": 1688043930}},

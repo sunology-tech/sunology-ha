@@ -123,34 +123,6 @@ class SunologySocket():
                     on_disconnect()
 
         #sio.wait()
-    
-    #TODO: DELETE-ME Mock
-    async def mock_messages_forever(self):
-        while not self._connected:
-            #time.sleep(1)
-            await asyncio.sleep(1)
-        with open('custom_components/sunology/mock_messages.json') as mock_messages_f:
-            mock_messages = json.load(mock_messages_f)
-            while self._connected:
-                msg_idx = random.randrange(0, len(mock_messages), 1)
-                message_to_send = mock_messages[msg_idx]
-                await self._socket.send(json.dumps(message_to_send))
-                # time.sleep(1)
-                await asyncio.sleep(1)
-
-    #TODO: DELETE-ME Mock
-    async def mock_messages_one_shot(self):
-        _LOGGER.info('Mock one shot')
-        while not self._connected:
-            #time.sleep(1)
-            _LOGGER.debug('Socket not opened')
-            await asyncio.sleep(1)
-        with open('/config/custom_components/sunology/mock_messages.json') as mock_messages_f:
-            _LOGGER.debug('File opened')
-            mock_messages = json.load(mock_messages_f)
-            msg_idx = random.randrange(0, len(mock_messages), 1)
-            message_to_send = mock_messages[msg_idx]
-            await self._socket.send(json.dumps(message_to_send))
 
         
     def disconnect(self):

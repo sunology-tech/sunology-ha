@@ -38,7 +38,7 @@ from .device import (
     SunologyAbstractDevice,
     SolarEventInterface,
     BatteryEventInterface,
-    SmartMetter_3P
+    SmartMeter_3P
 )
 
 from .const import (
@@ -164,8 +164,8 @@ class SunologyContext:
         self._socket_thread = threading.Thread(target=asyncio.run, args=(socket.connect(f"ws://{self.gateway_ip}/ws", None),))
         self._socket_thread.start()
 
-        oneshot_event_thread = threading.Thread(target=asyncio.run, args=(socket.mock_messages_forever(),))
-        oneshot_event_thread.start()
+        # oneshot_event_thread = threading.Thread(target=asyncio.run, args=(socket.mock_messages_forever(),))
+        # oneshot_event_thread.start()
 
 
 
@@ -244,10 +244,6 @@ class SunologyContext:
                 await self.hass.config_entries.async_forward_entry_unload(self._entry, "sensor")
                 await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
 
-                #TODO: DELETE-Me mock
-                # When calling a blocking function inside Home Assistant
-                await self.hass.async_add_executor_job(self._socket.mock_messages_one_shot)
-
     @property
     def sunology_devices_coordoned(self):
         """Return coordoned device"""
@@ -296,8 +292,8 @@ class SunologyContext:
                             st_pack.maxOutput = pack['maxOutput']
                             devices.append(st_pack)
                     devices.append(master)
-                case "SmartMetter":
-                    devices.append(SmartMetter_3P(product_data))
+                case "SmartMeter":
+                    devices.append(SmartMeter_3P(product_data))
 
                 case _:
                     _LOGGER.warning("Unmanaged device receive on device_event")
@@ -370,10 +366,10 @@ class SunologyContext:
             device = coordoned_device['device']
             coordinator = coordoned_device['coordinator']
             if device.device_id == data['id']:
-                if isinstance(device, SmartMetter_3P):
+                if isinstance(device, SmartMeter_3P):
                     device.update_gridevent(data)
                 else:
-                    _LOGGER.info("Grid event receive on non grid metter device")
+                    _LOGGER.info("Grid event receive on non grid meter device")
                 
 
                 event_data = {

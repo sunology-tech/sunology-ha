@@ -10,8 +10,8 @@ MIN_UNTIL_REFRESH = 10
 PACKAGE_NAME = f"custom_components.{DOMAIN}"
 
 
-class SmartMetterPhase(StrEnum):
-    """Phase of a smart metter."""
+class SmartMeterPhase(StrEnum):
+    """Phase of a smart meter."""
     ALL = "All"
     PHASE_1 = "P1"
     PHASE_2 = "P2"
