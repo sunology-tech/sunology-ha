@@ -1,7 +1,7 @@
 """Home Assistant representation of an Sunology device."""
-from .const import DOMAIN as SUNOLOGY_DOMAIN
+from .const import SmartMetterPhase, DOMAIN as SUNOLOGY_DOMAIN
 from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntry
-
+from typing import List
 
 class SunologyAbstractDevice():
     """Home Assistant representation of a Sunology abstract device."""
@@ -92,8 +92,6 @@ class SunologyAbstractDevice():
             config_entry_id=entry.entry_id,
             **self.device_info
         )
-
-
 
 class SolarEventInterface():
     """Sunology extra porperties for events."""
@@ -304,7 +302,6 @@ class PLAYMax(SunologyAbstractDevice, SolarEventInterface, BatteryEventInterface
         self._pvP = 0
         self._miP = 0
 
-
     @property
     def suggested_area(self) -> str:
         """Get the suggested_area."""
@@ -325,11 +322,117 @@ class PLAYMax(SunologyAbstractDevice, SolarEventInterface, BatteryEventInterface
         """Get string representation."""
         return f"Sunology Device: {self.name}::{self.model_name}::{self.unique_id}"
 
+class SmartMetter_ElectricalData():
+    """Home Assistant representation of a Sunology SmartMetter_electrical_data property."""
+
+    def __init__(self, current=0, voltage=0, power_factor=0, power=0, conso_tot=0, prod_tot=0):
+        """Initialize SmartMetter_electrical_data property."""
+        self._current = current
+        self._voltage = voltage
+        self._power_factor = power_factor
+        self._power = power
+        self._conso_tot = conso_tot
+        self._prod_tot = prod_tot
+
+    @property
+    def current(self):
+        """Get the current"""
+        return self._current
+
+    @property
+    def voltage(self):
+        """Get the voltage"""
+        return self._voltage
+
+    @property
+    def power_factor(self):
+        """Get the power_factor"""
+        return self._power_factor
+
+    @property
+    def power(self):
+        """Get the power"""
+        return self._power
+
+    @property
+    def conso_tot(self):
+        """Get the conso_tot"""
+        return self._conso_tot
+
+    @property
+    def prod_tot(self):
+        """Get the prod_tot"""
+        return self._prod_tot
+    
+    def update_electrical_data(self, raw_electrical_data):
+        self._current = raw_electrical_data['current']
+        self._voltage = raw_electrical_data['voltage']
+        self._power_factor = raw_electrical_data['power_factor']
+        self._power = raw_electrical_data['power']
+        self._conso_tot = raw_electrical_data['conso_tot']
+        self._prod_tot = raw_electrical_data['prod_tot']
+
+
+class SmartMetter_3P(SunologyAbstractDevice):
+    """Home Assistant representation of a Sunology device SmartMetter."""
+
+    def __init__(self, raw_smartmetter):
+        """Initialize SmartMetter_3 device."""
+        super().__init__(raw_smartmetter)
+        self._freq = 0,
+        self._electrical_data = {
+            SmartMetterPhase.ALL:       SmartMetter_ElectricalData(),
+            SmartMetterPhase.PHASE_1:   SmartMetter_ElectricalData(),
+            SmartMetterPhase.PHASE_2:   SmartMetter_ElectricalData(),
+            SmartMetterPhase.PHASE_3:   SmartMetter_ElectricalData()
+        }
+
+    @property
+    def suggested_area(self) -> str:
+        """Get the suggested_area."""
+        return "Garden"
+        
+    @property
+    def model_name(self) -> str:
+        """Get the model name."""
+        return "STREAM Metter"
+    
+    @property
+    def device_info(self):
+        dev_info = super().device_info
+        return dev_info
+
+    @property
+    def freq(self):
+        """Get the frequency"""
+        return self._freq
+    
+    @property
+    def electrical_data(self):
+        """Get the electrical_data"""
+        return self._electrical_data
+
+    def update_gridevent(self, raw_grid_event):
+        if "freq" in raw_grid_event.keys():
+            self._freq = raw_grid_event['freq']
+        if "electrical_data" in raw_grid_event.keys():
+            self.electrical_data[SmartMetterPhase.ALL].update_electrical_data(raw_grid_event['electrical_data'])
+        if "electrical_data_p1" in raw_grid_event.keys():
+            self.electrical_data[SmartMetterPhase.PHASE_1].update_electrical_data(raw_grid_event['electrical_data_p1'])
+        if "electrical_data_p2" in raw_grid_event.keys():
+            self.electrical_data[SmartMetterPhase.PHASE_2].update_electrical_data(raw_grid_event['electrical_data_p2'])
+        if "electrical_data_p3" in raw_grid_event.keys():
+            self.electrical_data[SmartMetterPhase.PHASE_3].update_electrical_data(raw_grid_event['electrical_data_p3'])
+
+    def __str__(self) -> str:
+        """Get string representation."""
+        return f"Sunology Device: {self.name}::{self.model_name}::{self.unique_id}"
+
 class Gateway(SunologyAbstractDevice):
     """Home Assistant representation of a Sunology device PLAYMax."""
 
     def __init__(self, raw_gateway):
-        """Initialize PLAYMax device."""        
+        """Initialize Gateway device."""        
         super().__init__(raw_gateway)
 
     @property
@@ -340,7 +443,7 @@ class Gateway(SunologyAbstractDevice):
     @property
     def model_name(self) -> str:
         """Get the model name."""
-        name = "E-Hub"
+        name = "STREAM Connect"
         return name
     
 

@@ -37,11 +37,8 @@ from .device import (
     StoreyPack,
     SunologyAbstractDevice,
     SolarEventInterface,
-    BatteryEventInterface
-)
-from .sensor import(
-    SunologMiPowerSensorEntity,
-    SunologPvPowerSensorEntity
+    BatteryEventInterface,
+    SmartMetter_3P
 )
 
 from .const import (
@@ -298,8 +295,9 @@ class SunologyContext:
                             st_pack.maxInput = pack['maxInput']
                             st_pack.maxOutput = pack['maxOutput']
                             devices.append(st_pack)
-
                     devices.append(master)
+                case "SmartMetter":
+                    devices.append(SmartMetter_3P(product_data))
 
                 case _:
                     _LOGGER.warning("Unmanaged device receive on device_event")
@@ -318,11 +316,11 @@ class SunologyContext:
             if device.device_id == data['id']:
                 if isinstance(device, SolarEventInterface):
                     device.solar_event_update(data)
-                if isinstance(device, BatteryEventInterface):
-                    device.battery_event_update(data)
-
                 else:
                     _LOGGER.info("Solar event receive on non solar device")
+                
+                if isinstance(device, BatteryEventInterface):
+                    device.battery_event_update(data)
                 
 
                 event_data = {
@@ -368,5 +366,24 @@ class SunologyContext:
     def on_gridEvent_callback(self, data):
         """on gridEvent callback"""
         _LOGGER.info("On gridEvent received")
+        for coordoned_device in self._sunology_devices_coordoned:
+            device = coordoned_device['device']
+            coordinator = coordoned_device['coordinator']
+            if device.device_id == data['id']:
+                if isinstance(device, SmartMetter_3P):
+                    device.update_gridevent(data)
+                else:
+                    _LOGGER.info("Grid event receive on non grid metter device")
+                
+
+                event_data = {
+                    "device_id": device.unique_id,
+                    "device_name": device.name,
+                }
+                
+                asyncio.run_coroutine_threadsafe(
+                    coordinator.async_request_refresh(), self._hass.loop
+                ).result()
+                break
 
 
