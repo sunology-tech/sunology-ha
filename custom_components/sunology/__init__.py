@@ -38,7 +38,8 @@ from .device import (
     SunologyAbstractDevice,
     SolarEventInterface,
     BatteryEventInterface,
-    SmartMeter_3P
+    SmartMeter_3P,
+    LinkyTransmitter
 )
 
 from .const import (
@@ -235,7 +236,7 @@ class SunologyContext:
         _LOGGER.debug("Call refresh devices")
         epoch_min = math.floor(time.time()/60)
         if not self._socket.is_connected and not self._socket_thread.is_alive():
-            _LOGGER.info("Socket not connected detectied atempt: %s", self._connection_atempt)
+            _LOGGER.info("Socket not connected detected, atempt: %s", self._connection_atempt)
             self._socket_thread = threading.Thread(target=asyncio.run, args=(self._socket.connect(f"ws://{self.gateway_ip}/ws", None),))
             self._socket_thread.start()
             self._connection_atempt+=1
@@ -306,7 +307,9 @@ class SunologyContext:
                     devices.append(master)
                 case "SmartMeter":
                     devices.append(SmartMeter_3P(product_data))
-
+                case "LinkyTransmitter":
+                    devices.append(LinkyTransmitter(product_data))
+                    
                 case _:
                     _LOGGER.warning("Unmanaged device receive on device_event")
                     devices.append(SunologyAbstractDevice(product_data))
@@ -379,6 +382,8 @@ class SunologyContext:
             coordinator = coordoned_device['coordinator']
             if device.device_id == data['id']:
                 if isinstance(device, SmartMeter_3P):
+                    device.update_gridevent(data)
+                elif isinstance(device, LinkyTransmitter):
                     device.update_gridevent(data)
                 else:
                     _LOGGER.info("Grid event receive on non grid meter device")

@@ -391,6 +391,172 @@ class SmartMeter_ElectricalData():
         if 'prod_tot' in raw_electrical_data.keys():
             self._prod_tot = raw_electrical_data['prod_tot']
 
+class SmartMeter_IndexesErl():
+    """Home Assistant representation of a Sunology SmartMeter_IndexesErl property."""
+
+    def __init__(self, contract = None, current_tarif = None, energy_consumed_total = 0, energy_consumed_idx1 = 0, energy_consumed_idx2 = 0, 
+                       energy_consumed_idx3 = 0, energy_consumed_idx4 = 0, energy_consumed_idx5 = 0, energy_consumed_idx6 = 0, 
+                       energy_consumed_idx7 = 0, energy_consumed_idx8 = 0, energy_consumed_idx9 = 0, energy_consumed_idx10 = 0):
+        """Initialize SmartMeter_electrical_data property."""
+        self._contract = None,
+        self._current_tarif = None,
+        self._energy_consumed_total = 0,
+        self._energy_consumed_idx1 = 0,
+        self._energy_consumed_idx2 = 0,
+        self._energy_consumed_idx3 = 0,
+        self._energy_consumed_idx4 = 0,
+        self._energy_consumed_idx5 = 0,
+        self._energy_consumed_idx6 = 0,
+        self._energy_consumed_idx7 = 0,
+        self._energy_consumed_idx8 = 0,
+        self._energy_consumed_idx9 = 0,
+        self._energy_consumed_idx10 = 0
+
+    @property
+    def contract(self):
+        """get the contract"""
+        return self._contract
+
+    @property
+    def current_tarif(self):
+        """get the current_tarif"""
+        return self._current_tarif
+
+    @property
+    def energy_consumed_total(self):
+        """get the energy_consumed_total"""
+        return self._energy_consumed_total
+
+    @property
+    def energy_consumed_idx1(self):
+        """get the energy_consumed_idx1"""
+        return self._energy_consumed_idx1
+
+    @property
+    def energy_consumed_idx2(self):
+        """get the energy_consumed_idx2"""
+        return self._energy_consumed_idx2
+
+    @property
+    def energy_consumed_idx3(self):
+        """get the energy_consumed_idx3"""
+        return self._energy_consumed_idx3
+
+    @property
+    def energy_consumed_idx4(self):
+        """get the energy_consumed_idx4"""
+        return self._energy_consumed_idx4
+
+    @property
+    def energy_consumed_idx5(self):
+        """get the energy_consumed_idx5"""
+        return self._energy_consumed_idx5
+
+    @property
+    def energy_consumed_idx6(self):
+        """get the energy_consumed_idx6"""
+        return self._energy_consumed_idx6
+
+    @property
+    def energy_consumed_idx7(self):
+        """get the energy_consumed_idx7"""
+        return self._energy_consumed_idx7
+
+    @property
+    def energy_consumed_idx8(self):
+        """get the energy_consumed_idx8"""
+        return self._energy_consumed_idx8
+
+    @property
+    def energy_consumed_idx9(self):
+        """get the energy_consumed_idx9"""
+        return self._energy_consumed_idx9
+
+    @property
+    def energy_consumed_idx10(self):
+        """get the energy_consumed_idx10"""
+        return self._energy_consumed_idx10
+
+    def update_indexes_erl(self, raw_indexes_erl):
+        if 'contract' in raw_indexes_erl.keys():
+            self._contract = raw_indexes_erl['contract']
+        if 'current_tarif' in raw_indexes_erl.keys():
+            self._current_tarif = raw_indexes_erl['current_tarif']
+        if 'energy_consumed_total' in raw_indexes_erl.keys():
+            self._energy_consumed_total = raw_indexes_erl['energy_consumed_total']
+        if 'energy_consumed_idx1' in raw_indexes_erl.keys():
+            self._energy_consumed_idx1 = raw_indexes_erl['energy_consumed_idx1']
+        if 'energy_consumed_idx2' in raw_indexes_erl.keys():
+            self._energy_consumed_idx2 = raw_indexes_erl['energy_consumed_idx2']
+        if 'energy_consumed_idx3' in raw_indexes_erl.keys():
+            self._energy_consumed_idx3 = raw_indexes_erl['energy_consumed_idx3']
+        if 'energy_consumed_idx4' in raw_indexes_erl.keys():
+            self._energy_consumed_idx4 = raw_indexes_erl['energy_consumed_idx4']
+        if 'energy_consumed_idx5' in raw_indexes_erl.keys():
+            self._energy_consumed_idx5 = raw_indexes_erl['energy_consumed_idx5']
+        if 'energy_consumed_idx6' in raw_indexes_erl.keys():
+            self._energy_consumed_idx6 = raw_indexes_erl['energy_consumed_idx6']
+        if 'energy_consumed_idx7' in raw_indexes_erl.keys():
+            self._energy_consumed_idx7 = raw_indexes_erl['energy_consumed_idx7']
+        if 'energy_consumed_idx8' in raw_indexes_erl.keys():
+            self._energy_consumed_idx8 = raw_indexes_erl['energy_consumed_idx8']
+        if 'energy_consumed_idx9' in raw_indexes_erl.keys():
+            self._energy_consumed_idx9 = raw_indexes_erl['energy_consumed_idx9']
+        if 'energy_consumed_idx10' in raw_indexes_erl.keys():
+            self._energy_consumed_idx10 = raw_indexes_erl['energy_consumed_idx10']
+
+
+class LinkyTransmitter(SunologyAbstractDevice):
+    """Home Assistant representation of a Sunology device Smart."""
+
+    def __init__(self, raw_smartmeter):
+        """Initialize LinkyTransmitter device."""
+        super().__init__(raw_smartmeter)
+        self._app_power_usage = 0
+        self._app_power_prod = 0
+        self._indexes_erl = SmartMeter_IndexesErl()
+
+    @property
+    def app_power_usage(self):
+        """Get the app_power_usage."""
+        return self._app_power_usage
+
+    @property
+    def app_power_prod(self):
+        """Get the app_power_usage."""
+        return self._app_power_prod
+
+    @property
+    def suggested_area(self) -> str:
+        """Get the suggested_area."""
+        return "Garage"
+        
+    @property
+    def model_name(self) -> str:
+        """Get the model name."""
+        return "Linky Transmitter"
+    
+    @property
+    def device_info(self):
+        dev_info = super().device_info
+        return dev_info
+
+    @property
+    def indexes_erl(self):
+        """Get the electrical_data"""
+        return self._indexes_erl
+
+    def update_gridevent(self, raw_grid_event):
+        if "app_power_usage" in raw_grid_event.keys():
+            self._app_power_usage = raw_grid_event['app_power_usage']
+        if "app_power_prod" in raw_grid_event.keys():
+            self._app_power_prod = raw_grid_event['app_power_prod']
+        if "indexes_erl" in raw_grid_event.keys():
+            self.indexes_erl.update_electrical_data(raw_grid_event['indexes_erl'])
+
+    def __str__(self) -> str:
+        """Get string representation."""
+        return f"Sunology Device: {self.name}::{self.model_name}::{self.unique_id}"
 
 class SmartMeter_3P(SunologyAbstractDevice):
     """Home Assistant representation of a Sunology device Smart."""
