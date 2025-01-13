@@ -234,6 +234,12 @@ class SunologyContext:
         """ here we return last device by id"""
         _LOGGER.debug("Call refresh devices")
         epoch_min = math.floor(time.time()/60)
+        if not self._socket.is_connected and not self._socket_thread.is_alive():
+            _LOGGER.info("Socket not connected detectied atempt: %s", self._connection_atempt)
+            self._socket_thread = threading.Thread(target=asyncio.run, args=(self._socket.connect(f"ws://{self.gateway_ip}/ws", None),))
+            self._socket_thread.start()
+            self._connection_atempt+=1
+
         if epoch_min != self._previous_refresh:
             self._previous_refresh = epoch_min
             ##await self.call_refresh_device() //All is async, not needed
