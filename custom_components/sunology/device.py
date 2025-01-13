@@ -1,5 +1,5 @@
 """Home Assistant representation of an Sunology device."""
-from .const import SmartMeterPhase, DOMAIN as SUNOLOGY_DOMAIN
+from .const import SmartMeterPhase, SmartMeterTarifIndex,  DOMAIN as SUNOLOGY_DOMAIN
 from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntry
 from typing import List
 
@@ -400,17 +400,20 @@ class SmartMeter_IndexesErl():
         """Initialize SmartMeter_electrical_data property."""
         self._contract = None,
         self._current_tarif = None,
-        self._energy_consumed_total = 0,
-        self._energy_consumed_idx1 = 0,
-        self._energy_consumed_idx2 = 0,
-        self._energy_consumed_idx3 = 0,
-        self._energy_consumed_idx4 = 0,
-        self._energy_consumed_idx5 = 0,
-        self._energy_consumed_idx6 = 0,
-        self._energy_consumed_idx7 = 0,
-        self._energy_consumed_idx8 = 0,
-        self._energy_consumed_idx9 = 0,
-        self._energy_consumed_idx10 = 0
+        self._energy_consumed_total = None
+        self._energy_produced_total = None
+        self._energy_consumed_indexed = {
+            SmartMeterTarifIndex.INDEX_1: None,
+            SmartMeterTarifIndex.INDEX_2: None,
+            SmartMeterTarifIndex.INDEX_3: None,
+            SmartMeterTarifIndex.INDEX_4: None,
+            SmartMeterTarifIndex.INDEX_5: None,
+            SmartMeterTarifIndex.INDEX_6: None,
+            SmartMeterTarifIndex.INDEX_7: None,
+            SmartMeterTarifIndex.INDEX_8: None,
+            SmartMeterTarifIndex.INDEX_9: None,
+            SmartMeterTarifIndex.INDEX_10: None
+        }
 
     @property
     def contract(self):
@@ -428,54 +431,14 @@ class SmartMeter_IndexesErl():
         return self._energy_consumed_total
 
     @property
-    def energy_consumed_idx1(self):
-        """get the energy_consumed_idx1"""
-        return self._energy_consumed_idx1
+    def energy_produced_total(self):
+        """get the energy_produced_total"""
+        return self._energy_produced_total
 
     @property
-    def energy_consumed_idx2(self):
-        """get the energy_consumed_idx2"""
-        return self._energy_consumed_idx2
-
-    @property
-    def energy_consumed_idx3(self):
-        """get the energy_consumed_idx3"""
-        return self._energy_consumed_idx3
-
-    @property
-    def energy_consumed_idx4(self):
-        """get the energy_consumed_idx4"""
-        return self._energy_consumed_idx4
-
-    @property
-    def energy_consumed_idx5(self):
-        """get the energy_consumed_idx5"""
-        return self._energy_consumed_idx5
-
-    @property
-    def energy_consumed_idx6(self):
-        """get the energy_consumed_idx6"""
-        return self._energy_consumed_idx6
-
-    @property
-    def energy_consumed_idx7(self):
-        """get the energy_consumed_idx7"""
-        return self._energy_consumed_idx7
-
-    @property
-    def energy_consumed_idx8(self):
-        """get the energy_consumed_idx8"""
-        return self._energy_consumed_idx8
-
-    @property
-    def energy_consumed_idx9(self):
-        """get the energy_consumed_idx9"""
-        return self._energy_consumed_idx9
-
-    @property
-    def energy_consumed_idx10(self):
-        """get the energy_consumed_idx10"""
-        return self._energy_consumed_idx10
+    def energy_consumed_indexed(self):
+        """get the energy_consumed_indexed"""
+        return self._energy_consumed_indexed
 
     def update_indexes_erl(self, raw_indexes_erl):
         if 'contract' in raw_indexes_erl.keys():
@@ -484,26 +447,28 @@ class SmartMeter_IndexesErl():
             self._current_tarif = raw_indexes_erl['current_tarif']
         if 'energy_consumed_total' in raw_indexes_erl.keys():
             self._energy_consumed_total = raw_indexes_erl['energy_consumed_total']
+        if 'energy_produced_total' in raw_indexes_erl.keys():
+            self._energy_produced_total = raw_indexes_erl['energy_produced_total']
         if 'energy_consumed_idx1' in raw_indexes_erl.keys():
-            self._energy_consumed_idx1 = raw_indexes_erl['energy_consumed_idx1']
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_1] = raw_indexes_erl['energy_consumed_idx1']
         if 'energy_consumed_idx2' in raw_indexes_erl.keys():
-            self._energy_consumed_idx2 = raw_indexes_erl['energy_consumed_idx2']
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_2] = raw_indexes_erl['energy_consumed_idx2']
         if 'energy_consumed_idx3' in raw_indexes_erl.keys():
-            self._energy_consumed_idx3 = raw_indexes_erl['energy_consumed_idx3']
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_3] = raw_indexes_erl['energy_consumed_idx3']
         if 'energy_consumed_idx4' in raw_indexes_erl.keys():
-            self._energy_consumed_idx4 = raw_indexes_erl['energy_consumed_idx4']
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_4] = raw_indexes_erl['energy_consumed_idx4']
         if 'energy_consumed_idx5' in raw_indexes_erl.keys():
-            self._energy_consumed_idx5 = raw_indexes_erl['energy_consumed_idx5']
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_5] = raw_indexes_erl['energy_consumed_idx5']
         if 'energy_consumed_idx6' in raw_indexes_erl.keys():
-            self._energy_consumed_idx6 = raw_indexes_erl['energy_consumed_idx6']
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_6] = raw_indexes_erl['energy_consumed_idx6']
         if 'energy_consumed_idx7' in raw_indexes_erl.keys():
-            self._energy_consumed_idx7 = raw_indexes_erl['energy_consumed_idx7']
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_7] = raw_indexes_erl['energy_consumed_idx7']
         if 'energy_consumed_idx8' in raw_indexes_erl.keys():
-            self._energy_consumed_idx8 = raw_indexes_erl['energy_consumed_idx8']
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_8] = raw_indexes_erl['energy_consumed_idx8']
         if 'energy_consumed_idx9' in raw_indexes_erl.keys():
-            self._energy_consumed_idx9 = raw_indexes_erl['energy_consumed_idx9']
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_9] = raw_indexes_erl['energy_consumed_idx9']
         if 'energy_consumed_idx10' in raw_indexes_erl.keys():
-            self._energy_consumed_idx10 = raw_indexes_erl['energy_consumed_idx10']
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_10] = raw_indexes_erl['energy_consumed_idx10']
 
 
 class LinkyTransmitter(SunologyAbstractDevice):
@@ -512,8 +477,8 @@ class LinkyTransmitter(SunologyAbstractDevice):
     def __init__(self, raw_smartmeter):
         """Initialize LinkyTransmitter device."""
         super().__init__(raw_smartmeter)
-        self._app_power_usage = 0
-        self._app_power_prod = 0
+        self._app_power_usage = None
+        self._app_power_prod = None
         self._indexes_erl = SmartMeter_IndexesErl()
 
     @property
@@ -552,7 +517,7 @@ class LinkyTransmitter(SunologyAbstractDevice):
         if "app_power_prod" in raw_grid_event.keys():
             self._app_power_prod = raw_grid_event['app_power_prod']
         if "indexes_erl" in raw_grid_event.keys():
-            self.indexes_erl.update_electrical_data(raw_grid_event['indexes_erl'])
+            self.indexes_erl.update_indexes_erl(raw_grid_event['indexes_erl'])
 
     def __str__(self) -> str:
         """Get string representation."""

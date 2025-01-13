@@ -16,3 +16,16 @@ class SmartMeterPhase(StrEnum):
     PHASE_1 = "P1"
     PHASE_2 = "P2"
     PHASE_3 = "P3"
+
+class SmartMeterTarifIndex(StrEnum):
+    """Phase of a smart meter."""
+    INDEX_1 = "idx1"
+    INDEX_2 = "idx2"
+    INDEX_3 = "idx3"
+    INDEX_4 = "idx4"
+    INDEX_5 = "idx5"
+    INDEX_6 = "idx6"
+    INDEX_7 = "idx7"
+    INDEX_8 = "idx8"
+    INDEX_9 = "idx9"
+    INDEX_10 = "idx10"

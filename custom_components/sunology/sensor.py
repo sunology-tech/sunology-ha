@@ -13,7 +13,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import SmartMeterPhase, PACKAGE_NAME, DOMAIN as SUNOLOGY_DOMAIN
+from .const import SmartMeterPhase, SmartMeterTarifIndex, PACKAGE_NAME, DOMAIN as SUNOLOGY_DOMAIN
 from .device import (
     PLAYMax,
     Gateway,
@@ -21,7 +21,8 @@ from .device import (
     SunologyAbstractDevice,
     SolarEventInterface,
     BatteryEventInterface,
-    SmartMeter_3P
+    SmartMeter_3P,
+    LinkyTransmitter
 )
 
 _LOGGER = logging.getLogger(PACKAGE_NAME) 
@@ -53,18 +54,34 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
         
         if isinstance(device, SmartMeter_3P):
             coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(coordinator, device,  SmartMeterPhase.ALL, hass))
             coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
+            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
+            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
             coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
+            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
+            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
             coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalExport(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_TotalImport(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
+            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
+            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
             coordoned_device['device_entities'].append(SunologyElectricityFrequencySensorEntity(coordinator, device, hass))
+        if isinstance(device, LinkyTransmitter):
+            coordoned_device['device_entities'].append(SunologyApparentPowerImportSensorEntity(coordinator, device, hass))
+            coordoned_device['device_entities'].append(SunologyApparentPowerExportSensorEntity(coordinator, device, hass))
+            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(coordinator, device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_1, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_2, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_3, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_4, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_5, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_6, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_7, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_8, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_9, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_10, hass))
+
         coordoned_device['device_entities'].append(SunologyRssiSensorEntity(coordinator, device, hass))
 
 
@@ -654,12 +671,12 @@ class SunologyElectricalDataSensorEntity_Power(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
-class SunologyElectricalDataSensorEntity_TotalExport(CoordinatorEntity, SensorEntity):
-    """Represent a mipower of a  device."""
+class SunologyTotalExportSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent energy surplus exported (energy produced) by a smart metter."""
 
     def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
                  device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
-        """Set up SunologBatteryPowerSensor entity."""
+        """Set up SunologyTotalExportSensorEntity entity."""
         super().__init__(coordinator)
         self._device = device
         self._name = device.name
@@ -681,7 +698,11 @@ class SunologyElectricalDataSensorEntity_TotalExport(CoordinatorEntity, SensorEn
     @property
     def state(self):
         """state property"""
-        prod_tot = self._device.electrical_data[self._phase].prod_tot
+        prod_tot = 0
+        if isinstance(self._device, SmartMeter_3P):
+            prod_tot = self._device.electrical_data[self._phase].prod_tot
+        elif isinstance(self._device, LinkyTransmitter):
+            prod_tot = self._device.indexes_erl.energy_produced_total
         return prod_tot
 
     @property
@@ -697,7 +718,7 @@ class SunologyElectricalDataSensorEntity_TotalExport(CoordinatorEntity, SensorEn
     @property
     def icon(self):
         """icon getter"""
-        return "mdi:transmission-tower-export"
+        return "mdi:transmission-tower-import"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -714,12 +735,12 @@ class SunologyElectricalDataSensorEntity_TotalExport(CoordinatorEntity, SensorEn
         """ Entity state_class """
         return SensorStateClass.TOTAL_INCREASING
 
-class SunologyElectricalDataSensorEntity_TotalImport(CoordinatorEntity, SensorEntity):
-    """Represent a mipower of a  device."""
+class SunologyTotalImportSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent energy imported (energy consumed) by a smart metter."""
 
     def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
                  device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
-        """Set up SunologBatteryPowerSensor entity."""
+        """Set up SunologyTotalImportSensorEntity entity."""
         super().__init__(coordinator)
         self._device = device
         self._name = device.name
@@ -741,8 +762,12 @@ class SunologyElectricalDataSensorEntity_TotalImport(CoordinatorEntity, SensorEn
     @property
     def state(self):
         """state property"""
-        prod_tot = self._device.electrical_data[self._phase].conso_tot
-        return prod_tot
+        conso_tot = 0
+        if isinstance(self._device, SmartMeter_3P):
+            conso_tot = self._device.electrical_data[self._phase].conso_tot
+        elif isinstance(self._device, LinkyTransmitter):
+            conso_tot = self._device.indexes_erl.energy_consumed_total
+        return conso_tot
 
     @property
     def unit_of_measurement(self):
@@ -757,7 +782,66 @@ class SunologyElectricalDataSensorEntity_TotalImport(CoordinatorEntity, SensorEn
     @property
     def icon(self):
         """icon getter"""
-        return "mdi:transmission-tower-import"
+        return "mdi:transmission-tower-export"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.ENERGY
+
+    @property
+    def state_class(self):
+        """ Entity state_class """
+        return SensorStateClass.TOTAL_INCREASING
+
+class SunologyImportSensorEntity_PeriodIndex(CoordinatorEntity, SensorEntity):
+    """Represent energy imported (energy consumed) by a smart metter."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, tarif_index: SmartMeterTarifIndex, hass):
+        """Set up SunologyTotalImportSensorEntity entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "Wh"
+        self._tarif_index = tarif_index
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"import_on_period")}_{self._tarif_index}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = 0
+        self._hass = hass
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"import_on_period_{self._tarif_index}_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        conso_tot = self._device.indexes_erl.energy_consumed_indexed[self._tarif_index]
+        return conso_tot
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} electrical data import on {self._tarif_index}"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:lightning-bolt-outline"
 
     @property
     def device_info(self) -> DeviceInfo:
@@ -887,3 +971,111 @@ class SunologyRssiSensorEntity(CoordinatorEntity, SensorEntity):
     def entity_category(self):
         """ Entity entity_category """
         return EntityCategory.DIAGNOSTIC
+
+class SunologyApparentPowerExportSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologyApparentPowerExportSensorEntity entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "VA"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"app_power_export")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = 0
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"app_power_export_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        prod_tot = self._device.app_power_prod
+        return prod_tot
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} App power exported"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:meter-electric-outline"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.APPARENT_POWER
+
+class SunologyApparentPowerImportSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologyApparentPowerImportSensorEntity entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "VA"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"app_power_import")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = 0
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"app_power_import_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        prod_tot = self._device.app_power_usage
+        return prod_tot
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} App power imported"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:meter-electric"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.APPARENT_POWER
