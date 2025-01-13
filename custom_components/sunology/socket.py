@@ -86,6 +86,10 @@ class SunologySocket():
         if self._on_connect_callback is not None:
             self._on_connect_callback()
 
+    @property
+    def is_connected(self):
+        return self._connected
+
     def on_disconnect(self):
         """ event: disconnected """
         _LOGGER.debug('Sunology socket disconnected')
