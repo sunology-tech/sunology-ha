@@ -14,12 +14,7 @@ _LOGGER = logging.getLogger(PACKAGE_NAME)
 
 
 
-def on_connect():
-    """ event: connected """
-    _LOGGER.debug('Sunology socket connected')
-def on_disconnect():
-    """ event: disconnected """
-    _LOGGER.debug('Sunology socket disconnected')
+
 
 
 class SunologySocket():
@@ -29,6 +24,9 @@ class SunologySocket():
         self._on_solarEvent_callback = None
         self._on_batteryEvent_callback = None
         self._on_gridEvent_callback = None
+        self._on_connect_callback = None
+        self._on_disconnect_callback = None
+
         self._initialised = False
         self._socket = None
         self._connected = False
@@ -49,6 +47,14 @@ class SunologySocket():
     def subscribe_on_gridEvent(self, callback_function):
         """event: tells you when a device trigger an alarm."""
         self._on_gridEvent_callback = callback_function
+    
+    def subscribe_on_connect(self, callback_function):
+        """event: tells you when you are connected to the socket."""
+        self._on_connect_callback = callback_function
+    
+    def subscribe_on_diconnect(self, callback_function):
+        """event: tells you when you are have lost connection of the socket."""
+        self._on_disconnect_callback = callback_function
 
     def on_productInfo(self, data):
         """ on_productInfo """
@@ -73,6 +79,18 @@ class SunologySocket():
         _LOGGER.debug('Grid event received: %s', data)
         if self._on_gridEvent_callback is not None:
             self._on_gridEvent_callback(data)
+    
+    def on_connect(self):
+        """ event: connected """
+        _LOGGER.debug('Sunology socket connected')
+        if self._on_connect_callback is not None:
+            self._on_connect_callback()
+
+    def on_disconnect(self):
+        """ event: disconnected """
+        _LOGGER.debug('Sunology socket disconnected')
+        if self._on_disconnect_callback is not None:
+            self._on_disconnect_callback()
 
     def process(self, raw_message):
         """ process the received messages """
@@ -98,29 +116,34 @@ class SunologySocket():
     async def connect(self, lan_host, auth_token):
         """ connect to the sunology socket"""
         _LOGGER.debug('Socket connection call %s', lan_host)
-        if auth_token is not None:
-            _LOGGER.debug('Auth connection')
-            async for self._socket in connect(lan_host, additional_headers={'token': auth_token}):
-                try:
-                    on_connect()
-                    self._connected = True
-                    async for message in self._socket:
-                        self.process(message)
-                except ConnectionClosed:
-                    self._connected = False
-                    on_disconnect()
-                    
+        if not self._connected:
+            if auth_token is not None:
+                _LOGGER.debug('Auth connection')
+                async with connect(lan_host, additional_headers={'token': auth_token}) as websocket:
+                    try:
+                        self._socket = websocket
+                        self._connected = True
+                        on_connect()
+                        async for message in self._socket:
+                            self.process(message)
+                    except ConnectionClosed:
+                        self._connected = False
+                        on_disconnect()
+                        
+            else:
+                _LOGGER.debug('Unauth connection')
+                async with connect(lan_host) as websocket :
+                    try:
+                        self._socket = websocket
+                        self._connected = True
+                        self.on_connect()
+                        async for message in self._socket:
+                            self.process(message)
+                    except ConnectionClosed:
+                        self._connected = False
+                        self.on_disconnect()
         else:
-            _LOGGER.debug('Unauth connection')
-            async for self._socket in connect(lan_host):
-                try:
-                    on_connect()
-                    self._connected = True
-                    async for message in self._socket:
-                        self.process(message)
-                except ConnectionClosed:
-                    self._connected = False
-                    on_disconnect()
+            _LOGGER.warn('Socket already connected')
 
         #sio.wait()
 

@@ -126,6 +126,7 @@ class SunologyContext:
         self._socket = None
         self._thread_started = False
         self._socket_thread = None
+        self._connection_atempt = 0
         self._previous_refresh = math.floor(time.time()/60)
     @property
     def hass(self):
@@ -155,6 +156,9 @@ class SunologyContext:
         socket.subscribe_on_solarEvent(self.on_solarEvent_callback)
         socket.subscribe_on_batteryEvent(self.on_batteryEvent_callback)
         socket.subscribe_on_gridEvent(self.on_gridEvent_callback)
+
+        socket.subscribe_on_connect(self.on_connect_callback)
+        socket.subscribe_on_diconnect(self.on_disconnect_callback)
 
         self._socket = socket
         # asyncio.run_coroutine_threadsafe(
@@ -227,22 +231,22 @@ class SunologyContext:
         return coordinator
 
     async def refresh_devices(self):
-            """ here we return last device by id"""
-            _LOGGER.debug("Call refresh devices")
-            epoch_min = math.floor(time.time()/60)
-            if epoch_min != self._previous_refresh:
-                self._previous_refresh = epoch_min
-                ##await self.call_refresh_device() //All is async, not needed
-                entities = []
-                for device_coordoned in self._sunology_devices_coordoned:
-                    device_entry = device_coordoned['device'].register(self.hass, self._entry)
-                    device_coordoned['device'].device_entry_id =  device_entry.id
+        """ here we return last device by id"""
+        _LOGGER.debug("Call refresh devices")
+        epoch_min = math.floor(time.time()/60)
+        if epoch_min != self._previous_refresh:
+            self._previous_refresh = epoch_min
+            ##await self.call_refresh_device() //All is async, not needed
+            entities = []
+            for device_coordoned in self._sunology_devices_coordoned:
+                device_entry = device_coordoned['device'].register(self.hass, self._entry)
+                device_coordoned['device'].device_entry_id =  device_entry.id
 
-                for entity in entities:
-                    entity.register(self.hass, self._entry)
+            for entity in entities:
+                entity.register(self.hass, self._entry)
 
-                await self.hass.config_entries.async_forward_entry_unload(self._entry, "sensor")
-                await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
+            await self.hass.config_entries.async_forward_entry_unload(self._entry, "sensor")
+            await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
 
     @property
     def sunology_devices_coordoned(self):
@@ -383,5 +387,20 @@ class SunologyContext:
                     coordinator.async_request_refresh(), self._hass.loop
                 ).result()
                 break
+    @callback
+    def on_connect_callback(self):
+        """on gridEvent callback"""
+        _LOGGER.info("On connect received")
+        self._connection_atempt=0
+    
+    @callback
+    def on_disconnect_callback(self):
+        """on gridEvent callback"""
+        _LOGGER.info("On disconnect received %s", self._connection_atempt)
+        self._socket_thread = threading.Thread(target=asyncio.run, args=(self._socket.connect(f"ws://{self.gateway_ip}/ws", None),))
+        self._socket_thread.start()
+        self._connection_atempt+=1
+
+
 
 
