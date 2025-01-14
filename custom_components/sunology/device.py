@@ -128,9 +128,9 @@ class SolarEventInterface():
 class BatteryPackInterface():
     """Sunology extra porperties for events."""
     def __init__(self, raw_device):
-        self._capacity = 0
-        self._maxInput = 0
-        self._maxOutput = 0
+        self._capacity = None
+        self._maxInput = None
+        self._maxOutput = None
     
     @property
     def capacity(self) -> int:
@@ -200,8 +200,8 @@ class PLAY(SunologyAbstractDevice, SolarEventInterface):
     def __init__(self, raw_play):
         """Initialize PLAYMax device."""
         super().__init__(raw_play)
-        self._pvP = 0
-        self._miP = 0
+        self._pvP = None
+        self._miP = None
 
     @property
     def suggested_area(self) -> str:
@@ -230,8 +230,8 @@ class StoreyMaster(SunologyAbstractDevice, BatteryPackInterface, BatteryEventInt
         """Initialize PLAYMax device."""
         super().__init__(raw_storey)
         self._unique_id: str = f"{raw_storey['id']}"
-        self._power = 0
-        self._percent = 0
+        self._power = None
+        self._percent = None
 
 
     @property
@@ -309,11 +309,11 @@ class PLAYMax(SunologyAbstractDevice, SolarEventInterface, BatteryEventInterface
     def __init__(self, raw_playmax):
         """Initialize PLAYMax device."""
         super().__init__(raw_playmax)
-        self._batP = 0
-        self._batPct = 0
-        self._batTmp = 0
-        self._pvP = 0
-        self._miP = 0
+        self._batP = None
+        self._batPct = None
+        self._batTmp = None
+        self._pvP = None
+        self._miP = None
 
     @property
     def suggested_area(self) -> str:
@@ -338,7 +338,7 @@ class PLAYMax(SunologyAbstractDevice, SolarEventInterface, BatteryEventInterface
 class SmartMeter_ElectricalData():
     """Home Assistant representation of a Sunology SmartMeter_electrical_data property."""
 
-    def __init__(self, current=0, voltage=0, power_factor=0, power=0, conso_tot=0, prod_tot=0):
+    def __init__(self, current=None, voltage=None, power_factor=None, power=None, conso_tot=None, prod_tot=None):
         """Initialize SmartMeter_electrical_data property."""
         self._current = current
         self._voltage = voltage
@@ -394,12 +394,10 @@ class SmartMeter_ElectricalData():
 class SmartMeter_IndexesErl():
     """Home Assistant representation of a Sunology SmartMeter_IndexesErl property."""
 
-    def __init__(self, contract = None, current_tarif = None, energy_consumed_total = 0, energy_consumed_idx1 = 0, energy_consumed_idx2 = 0, 
-                       energy_consumed_idx3 = 0, energy_consumed_idx4 = 0, energy_consumed_idx5 = 0, energy_consumed_idx6 = 0, 
-                       energy_consumed_idx7 = 0, energy_consumed_idx8 = 0, energy_consumed_idx9 = 0, energy_consumed_idx10 = 0):
+    def __init__(self):
         """Initialize SmartMeter_electrical_data property."""
-        self._contract = None,
-        self._current_tarif = None,
+        self._contract = None
+        self._current_tarif = None
         self._energy_consumed_total = None
         self._energy_produced_total = None
         self._energy_consumed_indexed = {
@@ -529,7 +527,7 @@ class SmartMeter_3P(SunologyAbstractDevice):
     def __init__(self, raw_smartmeter):
         """Initialize SmartMeter_3 device."""
         super().__init__(raw_smartmeter)
-        self._freq = 0
+        self._freq = None
         self._electrical_data = {
             SmartMeterPhase.ALL:       SmartMeter_ElectricalData(),
             SmartMeterPhase.PHASE_1:   SmartMeter_ElectricalData(),
