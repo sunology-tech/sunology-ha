@@ -366,7 +366,7 @@ class SunologyContext:
                                     break
                 else:
                     _LOGGER.info("Solar event receive on non storey master device")
-                            
+
                 asyncio.run_coroutine_threadsafe(
                     coordinator.async_request_refresh(), self._hass.loop
                 ).result()
@@ -387,8 +387,6 @@ class SunologyContext:
                     device.update_gridevent(data)
                 else:
                     _LOGGER.info("Grid event receive on non grid meter device")
-                
-
                 event_data = {
                     "device_id": device.unique_id,
                     "device_name": device.name,

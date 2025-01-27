@@ -8,6 +8,7 @@ from websockets.asyncio.server import serve
 
 async def echo(websocket):
     async for message in websocket:
+        print(message)
         await websocket.send(message)
 
 
