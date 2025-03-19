@@ -9,10 +9,10 @@ class SunologyAbstractDevice():
     def __init__(self, raw_device):
         """Initialize PLAYMax device."""
         self._unique_id: str = raw_device['id']
-        self._software_version: str = raw_device['sw_version']
-        self._hw_version: str = raw_device['hw_version']
+        self._software_version: str = raw_device['fwVersion'] if 'fwVersion' in raw_device.keys() else None
+        self._hw_version: str = raw_device['hwVersion'] if 'hwVersion' in raw_device.keys() else None
         self._device_entry_id = None
-        self._parent_id: str = raw_device['parent_id'] if 'parent_id' in raw_device.keys() else None
+        self._parent_id: str = raw_device['parentId'] if 'parentId' in raw_device.keys() else None
         self._name: str = raw_device['name'] if 'name' in raw_device.keys() else f"{self.model_name} {self.device_id}"
         self._rssi: int = raw_device['rssi'] if 'rssi' in raw_device.keys() else None
 
@@ -79,7 +79,7 @@ class SunologyAbstractDevice():
             self._rssi = raw_event['rssi']
         
         if 'sw_version' in raw_event.keys():
-            self._software_version = raw_event['sw_version']
+            self._software_version = raw_event['swVersion']
 
     
     @property
@@ -188,7 +188,7 @@ class BatteryEventInterface():
         """ 
         """
 
-        self._batP = data['batP']
+        self._batP = data['batPow']
         self._batPct = data['batPct']
         self._batTmp = data['batTmp']
 
@@ -381,14 +381,14 @@ class SmartMeter_ElectricalData():
             self._current = raw_electrical_data['current']
         if 'voltage' in raw_electrical_data.keys():
             self._voltage = raw_electrical_data['voltage']
-        if 'power_factor' in raw_electrical_data.keys():
-            self._power_factor = raw_electrical_data['power_factor']
+        if 'powerFactor' in raw_electrical_data.keys():
+            self._power_factor = raw_electrical_data['powerFactor']
         if 'power' in raw_electrical_data.keys():
             self._power = raw_electrical_data['power']
-        if 'conso_tot' in raw_electrical_data.keys():
-            self._conso_tot = raw_electrical_data['conso_tot']
-        if 'prod_tot' in raw_electrical_data.keys():
-            self._prod_tot = raw_electrical_data['prod_tot']
+        if 'consoTot' in raw_electrical_data.keys():
+            self._conso_tot = raw_electrical_data['consoTot']
+        if 'prodTot' in raw_electrical_data.keys():
+            self._prod_tot = raw_electrical_data['prodTot']
 
 class SmartMeter_IndexesErl():
     """Home Assistant representation of a Sunology SmartMeter_IndexesErl property."""
@@ -440,32 +440,32 @@ class SmartMeter_IndexesErl():
     def update_indexes_erl(self, raw_indexes_erl):
         if 'contract' in raw_indexes_erl.keys():
             self._contract = raw_indexes_erl['contract']
-        if 'current_tarif' in raw_indexes_erl.keys():
-            self._current_tarif = raw_indexes_erl['current_tarif']
-        if 'energy_consumed_total' in raw_indexes_erl.keys():
-            self._energy_consumed_total = raw_indexes_erl['energy_consumed_total']
-        if 'energy_produced_total' in raw_indexes_erl.keys():
-            self._energy_produced_total = raw_indexes_erl['energy_produced_total']
-        if 'energy_consumed_idx1' in raw_indexes_erl.keys():
-            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_1] = raw_indexes_erl['energy_consumed_idx1']
-        if 'energy_consumed_idx2' in raw_indexes_erl.keys():
-            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_2] = raw_indexes_erl['energy_consumed_idx2']
-        if 'energy_consumed_idx3' in raw_indexes_erl.keys():
-            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_3] = raw_indexes_erl['energy_consumed_idx3']
-        if 'energy_consumed_idx4' in raw_indexes_erl.keys():
-            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_4] = raw_indexes_erl['energy_consumed_idx4']
-        if 'energy_consumed_idx5' in raw_indexes_erl.keys():
-            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_5] = raw_indexes_erl['energy_consumed_idx5']
-        if 'energy_consumed_idx6' in raw_indexes_erl.keys():
-            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_6] = raw_indexes_erl['energy_consumed_idx6']
-        if 'energy_consumed_idx7' in raw_indexes_erl.keys():
-            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_7] = raw_indexes_erl['energy_consumed_idx7']
-        if 'energy_consumed_idx8' in raw_indexes_erl.keys():
-            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_8] = raw_indexes_erl['energy_consumed_idx8']
-        if 'energy_consumed_idx9' in raw_indexes_erl.keys():
-            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_9] = raw_indexes_erl['energy_consumed_idx9']
-        if 'energy_consumed_idx10' in raw_indexes_erl.keys():
-            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_10] = raw_indexes_erl['energy_consumed_idx10']
+        if 'currentTarif' in raw_indexes_erl.keys():
+            self._current_tarif = raw_indexes_erl['currentTarif']
+        if 'energyConsumedTotal' in raw_indexes_erl.keys():
+            self._energy_consumed_total = raw_indexes_erl['energyConsumedTotal']
+        if 'energyProducedTotal' in raw_indexes_erl.keys():
+            self._energy_produced_total = raw_indexes_erl['energyProducedTotal']
+        if 'energyConsumedIdx1' in raw_indexes_erl.keys():
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_1] = raw_indexes_erl['energyConsumedIdx1']
+        if 'energyConsumedIdx2' in raw_indexes_erl.keys():
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_2] = raw_indexes_erl['energyConsumedIdx2']
+        if 'energyConsumedIdx3' in raw_indexes_erl.keys():
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_3] = raw_indexes_erl['energyConsumedIdx3']
+        if 'energyConsumedIdx4' in raw_indexes_erl.keys():
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_4] = raw_indexes_erl['energyConsumedIdx4']
+        if 'energyConsumedIdx5' in raw_indexes_erl.keys():
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_5] = raw_indexes_erl['energyConsumedIdx5']
+        if 'energyConsumedIdx6' in raw_indexes_erl.keys():
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_6] = raw_indexes_erl['energyConsumedIdx6']
+        if 'energyConsumedIdx7' in raw_indexes_erl.keys():
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_7] = raw_indexes_erl['energyConsumedIdx7']
+        if 'energyConsumedIdx8' in raw_indexes_erl.keys():
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_8] = raw_indexes_erl['energyConsumedIdx8']
+        if 'energyConsumedIdx9' in raw_indexes_erl.keys():
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_9] = raw_indexes_erl['energyConsumedIdx9']
+        if 'energyConsumed_Ix10' in raw_indexes_erl.keys():
+            self._energy_consumed_indexed[SmartMeterTarifIndex.INDEX_10] = raw_indexes_erl['energyConsumedIdx10']
 
 
 class LinkyTransmitter(SunologyAbstractDevice):
@@ -509,12 +509,12 @@ class LinkyTransmitter(SunologyAbstractDevice):
         return self._indexes_erl
 
     def update_gridevent(self, raw_grid_event):
-        if "app_power_usage" in raw_grid_event.keys():
-            self._app_power_usage = raw_grid_event['app_power_usage']
-        if "app_power_prod" in raw_grid_event.keys():
-            self._app_power_prod = raw_grid_event['app_power_prod']
-        if "indexes_erl" in raw_grid_event.keys():
-            self.indexes_erl.update_indexes_erl(raw_grid_event['indexes_erl'])
+        if "appPowerUsage" in raw_grid_event.keys():
+            self._app_power_usage = raw_grid_event['appPowerUsage']
+        if "appPowerProd" in raw_grid_event.keys():
+            self._app_power_prod = raw_grid_event['appPowerProd']
+        if "indexesErl" in raw_grid_event.keys():
+            self.indexes_erl.update_indexes_erl(raw_grid_event['indexesErl'])
 
     def __str__(self) -> str:
         """Get string representation."""
@@ -562,14 +562,14 @@ class SmartMeter_3P(SunologyAbstractDevice):
     def update_gridevent(self, raw_grid_event):
         if "freq" in raw_grid_event.keys():
             self._freq = raw_grid_event['freq']
-        if "electrical_data" in raw_grid_event.keys():
-            self.electrical_data[SmartMeterPhase.ALL].update_electrical_data(raw_grid_event['electrical_data'])
-        if "electrical_data_p1" in raw_grid_event.keys():
-            self.electrical_data[SmartMeterPhase.PHASE_1].update_electrical_data(raw_grid_event['electrical_data_p1'])
-        if "electrical_data_p2" in raw_grid_event.keys():
-            self.electrical_data[SmartMeterPhase.PHASE_2].update_electrical_data(raw_grid_event['electrical_data_p2'])
-        if "electrical_data_p3" in raw_grid_event.keys():
-            self.electrical_data[SmartMeterPhase.PHASE_3].update_electrical_data(raw_grid_event['electrical_data_p3'])
+        if "electricalData" in raw_grid_event.keys():
+            self.electrical_data[SmartMeterPhase.ALL].update_electrical_data(raw_grid_event['electricalData'])
+        if "electricalDataP1" in raw_grid_event.keys():
+            self.electrical_data[SmartMeterPhase.PHASE_1].update_electrical_data(raw_grid_event['electricalDataP1'])
+        if "electricalDataP2" in raw_grid_event.keys():
+            self.electrical_data[SmartMeterPhase.PHASE_2].update_electrical_data(raw_grid_event['electricalDataP2'])
+        if "electricalDataP3" in raw_grid_event.keys():
+            self.electrical_data[SmartMeterPhase.PHASE_3].update_electrical_data(raw_grid_event['electricalDataP3'])
 
     def __str__(self) -> str:
         """Get string representation."""

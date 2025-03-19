@@ -275,7 +275,7 @@ class SunologyContext:
     @callback
     def on_productInfo_callback(self, product_data):
         """on device callback"""
-        _LOGGER.info("On device received '%s'", product_data['product_name'])
+        _LOGGER.info("On device received '%s'", product_data['productName'])
         found = False
         for device in self._sunology_devices:
             if device.device_id == product_data['id']:
@@ -284,7 +284,7 @@ class SunologyContext:
                 break
         if not found:
             devices = []
-            match product_data['product_name']:
+            match product_data['productName']:
                 case "PLAYMax":
                     devices.append(PLAYMax(product_data))
                 case "PLAY":
@@ -293,19 +293,19 @@ class SunologyContext:
                     devices.append(Gateway(product_data))
                 case "Storey":
                     master = StoreyMaster(product_data)
-                    for pack in product_data['hardware_configuration']['packs']:
-                        if pack['packIndex'] == 0:
+                    for pack in product_data['packs']:
+                        if pack['packIndex'] == 1:
                             master.capacity = pack['capacity']
-                            master.maxInput = pack['maxInput']
-                            master.maxOutput = pack['maxOutput']
+                            master.maxInput = pack['maxCons']
+                            master.maxOutput = pack['maxProd']
                         else:
                             st_pack = StoreyPack(product_data, pack['packIndex'])
                             st_pack.capacity = pack['capacity']
-                            st_pack.maxInput = pack['maxInput']
-                            st_pack.maxOutput = pack['maxOutput']
+                            st_pack.maxInput = pack['maxCons']
+                            st_pack.maxOutput = pack['maxProd']
                             devices.append(st_pack)
                     devices.append(master)
-                case "SmartMeter":
+                case "STREAMMeter":
                     devices.append(SmartMeter_3P(product_data))
                 case "LinkyTransmitter":
                     devices.append(LinkyTransmitter(product_data))
@@ -353,10 +353,10 @@ class SunologyContext:
             coordinator = coordoned_device['coordinator']
             if device.device_id == data['id']:
                 if isinstance(device, StoreyMaster):
-                    device.percent = data['pct']
-                    device.power = data['power']
+                    device.percent = data['battery']['batPct']
+                    device.power = data['battery']['batPow']
                     for pack in data['packs']:
-                        if pack['packIndex'] == 0:
+                        if pack['packIndex'] == 1:
                             device.battery_event_update(pack)
                         else:
                             for sub_coordoned_device in self._sunology_devices_coordoned:
