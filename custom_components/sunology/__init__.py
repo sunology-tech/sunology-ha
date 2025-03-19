@@ -355,6 +355,8 @@ class SunologyContext:
                 if isinstance(device, StoreyMaster):
                     device.percent = data['battery']['batPct']
                     device.power = data['battery']['batPow']
+                    device.status = data['status']
+                    device.acVoltage = data['acVoltage']
                     for pack in data['packs']:
                         if pack['packIndex'] == 1:
                             device.battery_event_update(pack)

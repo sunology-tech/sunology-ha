@@ -18,6 +18,7 @@ from .device import (
     PLAYMax,
     Gateway,
     StoreyMaster,
+    StoreyPack,
     SunologyAbstractDevice,
     SolarEventInterface,
     BatteryEventInterface,
@@ -47,11 +48,21 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
             coordoned_device['device_entities'].append(SunologyBatteryPowerSensorEntity(coordinator, device, hass))
             coordoned_device['device_entities'].append(SunologyBatterySocSensorEntity(coordinator, device, hass))
             coordoned_device['device_entities'].append(SunologyBatteryTempSensorEntity(coordinator, device, hass))
+            if(isinstance(device,(StoreyMaster, StoreyPack))):
+                coordoned_device['device_entities'].append(SunologyBatteryCellsTempSensorEntity(coordinator, device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryRadTempSensorEntity(coordinator, device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryTargetPowerSensorEntity(coordinator, device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryDcVoltageSensorEntity(coordinator, device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryDcCurrentSensorEntity(coordinator, device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryEnergyProducedSensorEntity(coordinator, device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryEnergyConsumedSensorEntity(coordinator, device, hass))
         
         if isinstance(device, StoreyMaster):
             coordoned_device['device_entities'].append(SunologyBatteryMasterSocSensorEntity(coordinator, device, hass))
             coordoned_device['device_entities'].append(SunologyBatteryMasterPowerSensorEntity(coordinator, device, hass))
-        
+            coordoned_device['device_entities'].append(SunologyBatteryMasterStatusSensorEntity(coordinator, device, hass))
+            coordoned_device['device_entities'].append(SunologyBatteryMasterAcVoltageSensorEntity(coordinator, device, hass))
+
         if isinstance(device, SmartMeter_3P):
             coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.ALL, hass))
             coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.ALL, hass))
@@ -272,6 +283,417 @@ class SunologyBatteryPowerSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
+class SunologyBatteryTargetPowerSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologBatteryTargetPowerSensor entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "W"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"targetPow")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = None
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"targetP_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        state = self._device.targetPow
+        return state
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} battery target Power"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:target"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.POWER
+
+    @property
+    def state_class(self):
+        """ Entity state_class """
+        return SensorStateClass.MEASUREMENT
+
+class SunologyBatteryDcVoltageSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologyBatteryDcVoltageSensor entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "V"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"dcVoltage")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = None
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"dcVoltage_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        state = self._device.dcVoltage
+        return state
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} battery DC Voltage"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:flash-triangle-outline"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.VOLTAGE
+
+    @property
+    def state_class(self):
+        """ Entity state_class """
+        return SensorStateClass.MEASUREMENT
+
+
+class SunologyBatteryMasterAcVoltageSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologyBatteryAcVoltageSensor entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "V"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"acVoltage")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = None
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"acVoltage_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        state = self._device.acVoltage
+        return state
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} battery master AC Voltage"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:flash-triangle"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.VOLTAGE
+
+    @property
+    def state_class(self):
+        """ Entity state_class """
+        return SensorStateClass.MEASUREMENT
+
+class SunologyBatteryDcCurrentSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologyBatteryDcCurrentSensor entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "A"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"dcCurrent")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = None
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"dcCurrent_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        state = self._device.dcCurrent
+        return state
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} battery DC Current"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:current-dc"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.CURRENT
+
+    @property
+    def state_class(self):
+        """ Entity state_class """
+        return SensorStateClass.MEASUREMENT
+
+class SunologyBatteryEnergyProducedSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologyBatteryEnergyProducedSensor entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "mWh"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"energyProd")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = None
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"energyProd_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        state = self._device.energyProd
+        return state
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} battery Energy Produced"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:lightning-bolt-outline"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.ENERGY
+
+    @property
+    def state_class(self):
+        """ Entity state_class """
+        return SensorStateClass.MEASUREMENT
+
+
+class SunologyBatteryEnergyConsumedSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologyBatteryEnergyConsumedSensor entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "mWh"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"energyCons")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = None
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"energyCons_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        state = self._device.energyCons
+        return state
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} battery Energy Consumed"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:lightning-bolt"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.ENERGY
+
+    @property
+    def state_class(self):
+        """ Entity state_class """
+        return SensorStateClass.MEASUREMENT
+
+
+class SunologyBatteryMasterStatusSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologyStatusSensorEntity entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"status")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = None
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"status_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        state = self._device.status
+        return state
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} master Status"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def options(self) -> DeviceInfo:
+        """Return the device info."""
+        return [
+            "CHARGING",
+            "DISCHARGING",
+            "OFFGRID_DISCHARGING",
+            "OFF"
+        ]
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.ENUM
+
+        
 class SunologyBatterySocSensorEntity(CoordinatorEntity, SensorEntity):
     """Represent a mipower of a  device."""
 
@@ -529,6 +951,123 @@ class SunologyBatteryTempSensorEntity(CoordinatorEntity, SensorEntity):
     def icon(self):
         """icon getter"""
         return "mdi:thermometer"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.TEMPERATURE
+
+    @property
+    def state_class(self):
+        """ Entity state_class """
+        return SensorStateClass.MEASUREMENT
+class SunologyBatteryCellsTempSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologBatteryPowerSensor entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "°C"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"cellsTmp")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = None
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"cellsTmp_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        batP = self._device.batTmp
+        return batP
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} battery cells Temperature"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:temperature-celsius"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.TEMPERATURE
+
+    @property
+    def state_class(self):
+        """ Entity state_class """
+        return SensorStateClass.MEASUREMENT
+
+class SunologyBatteryRadTempSensorEntity(CoordinatorEntity, SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
+                 device:SunologyAbstractDevice, hass):
+        """Set up SunologBatteryRadTempSensor entity."""
+        super().__init__(coordinator)
+        self._device = device
+        self._name = device.name
+        self._unit_of_measurement = "°C"
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"radTmp")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = None
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"radTmp_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        batP = self._device.radTmp
+        return batP
+
+    @property
+    def unit_of_measurement(self):
+        """unit of mesurment property"""
+        return self._unit_of_measurement
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} battery radiator Temperature"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:thermometer-lines"
 
     @property
     def device_info(self) -> DeviceInfo:

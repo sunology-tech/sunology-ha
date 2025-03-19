@@ -166,7 +166,13 @@ class BatteryPackInterface():
 class BatteryEventInterface():
     """Sunology extra porperties for events."""
     def __init__(self, raw_device):
-        pass
+        self._cellsTmp = None
+        self._radTmp = None
+        self._targetPow = None
+        self._dcCurrent = None
+        self._dcVoltage = None
+        self._energyCons = None
+        self._energyProd = None
 
     @property
     def batP(self):
@@ -183,6 +189,41 @@ class BatteryEventInterface():
         """Return the batTmp value"""
         return self._batTmp
     
+    @property
+    def cellsTmp(self):
+        """return the cellsTmp value"""
+        return self._cellsTmp
+ 
+    @property
+    def radTmp(self):
+        """return the radTmp value"""
+        return self._radTmp
+ 
+    @property
+    def targetPow(self):
+        """return the targetPow value"""
+        return self._targetPow
+ 
+    @property
+    def dcCurrent(self):
+        """return the dcCurrent value"""
+        return self._dcCurrent
+    
+    @property
+    def dcVoltage(self):
+        """return the dcVoltage value"""
+        return self._dcVoltage
+ 
+    @property
+    def energyCons(self):
+        """return the energyCons value"""
+        return self._energyCons
+ 
+    @property
+    def energyProd(self):
+        """return the energyProd value"""
+        return self._energyProd
+
     def battery_event_update(self, data):
         """Return the miP value"""
         """ 
@@ -191,6 +232,21 @@ class BatteryEventInterface():
         self._batP = data['batPow']
         self._batPct = data['batPct']
         self._batTmp = data['batTmp']
+        if 'cellsTmp' in data.keys():
+            self._cellsTmp = data['cellsTmp']
+        if 'radTmp' in data.keys():
+            self._radTmp = data['radTmp']
+        if 'targetPow' in data.keys():
+            self._targetPow = data['targetPow']
+        if 'dcCurrent' in data.keys():
+            self._dcCurrent = data['dcCurrent']
+        if 'dcVoltage' in data.keys():
+            self._dcVoltage = data['dcVoltage']
+        if 'energyCons' in data.keys():
+            self._energyCons = data['energyCons']
+        if 'energyProd' in data.keys():
+            self._energyProd = data['energyProd']
+
 
 
 class PLAY(SunologyAbstractDevice, SolarEventInterface):
@@ -231,7 +287,8 @@ class StoreyMaster(SunologyAbstractDevice, BatteryPackInterface, BatteryEventInt
         self._unique_id: str = f"{raw_storey['id']}"
         self._power = None
         self._percent = None
-
+        self._status = None
+        self._acVoltage = None
 
     @property
     def suggested_area(self) -> str:
@@ -261,6 +318,28 @@ class StoreyMaster(SunologyAbstractDevice, BatteryPackInterface, BatteryEventInt
     def power(self, power):
         """Set the power value"""
         self._power = power
+    
+    @property
+    def status(self):
+        """Return the status value"""
+        return self._status
+
+    @power.setter
+    def status(self, status):
+        """Set the status value"""
+        self._status = status
+
+        
+    @property
+    def acVoltage(self):
+        """return the acVoltage value"""
+        return self._acVoltage
+
+        
+    @acVoltage.setter
+    def acVoltage(self, acVoltage):
+        """Set the acVoltage value"""
+        self._acVoltage = acVoltage
     
     @property
     def percent(self):
