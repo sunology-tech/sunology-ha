@@ -293,12 +293,16 @@ class SunologyContext:
                     devices.append(Gateway(product_data))
                 case "Storey":
                     master = StoreyMaster(product_data)
+
+                    master.capacity = product_data['battery']['capacity']
+                    master.maxInput = product_data['battery']['maxCons']
+                    master.maxOutput = product_data['battery']['maxProd']
                     for pack in product_data['packs']:
-                        if pack['packIndex'] == 1:
-                            master.capacity = pack['capacity']
-                            master.maxInput = pack['maxCons']
-                            master.maxOutput = pack['maxProd']
-                        else:
+                        # if pack['packIndex'] == 1:
+                        #     master.capacity = pack['capacity']
+                        #     master.maxInput = pack['maxCons']
+                        #     master.maxOutput = pack['maxProd']
+                        # else:
                             st_pack = StoreyPack(product_data, pack['packIndex'])
                             st_pack.capacity = pack['capacity']
                             st_pack.maxInput = pack['maxCons']
@@ -353,14 +357,11 @@ class SunologyContext:
             coordinator = coordoned_device['coordinator']
             if device.device_id == data['id']:
                 if isinstance(device, StoreyMaster):
-                    device.percent = data['battery']['batPct']
-                    device.power = data['battery']['batPow']
                     device.status = data['status']
                     device.acVoltage = data['acVoltage']
+                    device.battery_event_update(data['battery'])
+
                     for pack in data['packs']:
-                        if pack['packIndex'] == 1:
-                            device.battery_event_update(pack)
-                        else:
                             for sub_coordoned_device in self._sunology_devices_coordoned:
                                 sub_device = sub_coordoned_device['device']
                                 if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":

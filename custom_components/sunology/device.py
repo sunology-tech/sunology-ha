@@ -285,8 +285,6 @@ class StoreyMaster(SunologyAbstractDevice, BatteryPackInterface, BatteryEventInt
         """Initialize PLAYMax device."""
         super().__init__(raw_storey)
         self._unique_id: str = f"{raw_storey['id']}"
-        self._power = None
-        self._percent = None
         self._status = None
         self._acVoltage = None
 
@@ -308,28 +306,7 @@ class StoreyMaster(SunologyAbstractDevice, BatteryPackInterface, BatteryEventInt
     def __str__(self) -> str:
         """Get string representation."""
         return f"Sunology Device: {self.name}::{self.model_name}::{self.unique_id}"
-    
-    @property
-    def power(self):
-        """Return the power value"""
-        return self._power
 
-    @power.setter
-    def power(self, power):
-        """Set the power value"""
-        self._power = power
-    
-    @property
-    def status(self):
-        """Return the status value"""
-        return self._status
-
-    @power.setter
-    def status(self, status):
-        """Set the status value"""
-        self._status = status
-
-        
     @property
     def acVoltage(self):
         """return the acVoltage value"""
@@ -342,14 +319,14 @@ class StoreyMaster(SunologyAbstractDevice, BatteryPackInterface, BatteryEventInt
         self._acVoltage = acVoltage
     
     @property
-    def percent(self):
-        """Return the percent value"""
-        return self._percent
+    def status(self):
+        """return the status value"""
+        return self._status
     
-    @percent.setter
-    def percent(self, percent):
-        """set the percent value"""
-        self._percent = percent
+    @status.setter
+    def status(self, status):
+        """Set the status value"""
+        self._status = status
 
 class StoreyPack(SunologyAbstractDevice, BatteryPackInterface, BatteryEventInterface):
     """Home Assistant representation of a Sunology device PLAY."""
