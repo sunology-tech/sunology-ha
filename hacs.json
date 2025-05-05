@@ -1,6 +1,5 @@
 {
-  "name": "Subology integration",
-  "content_in_root": false,
+  "name": "Sunology integration",
   "render_readme": true,
   "country": ["FR", "ES", "DE"],
   "homeassistant": "2024.10.0"
