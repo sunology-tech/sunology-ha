@@ -15,7 +15,9 @@ You need to have an Home assistant E-Hub
 
 | Name | Type | Requirement | `default` Description
 | ---- | ---- | ------- | -----------
-| lan_gateway_ip | string | **Optional** | Sunology e-Hub lan ip.
+| lan_gateway_host | string | **Required** | Sunology e-Hub lan ip.
+| lan_gateway_port | string | **Required** | Sunology e-Hub lan ip.
+
 
 ## Technical add the logo for cusom integration:
  1 - Open a PR on this repo like this one to register the integration
@@ -32,5 +34,6 @@ You need to have an Home assistant E-Hub
 - Add the folowing line in your configuration.yml
 ```yaml
     sunology:
-        lan_gateway_ip: <gateway_ip_address> # Default sunology-ehub.local
+        lan_gateway_host: <gateway_host_address> # Default sunology-ehub.local
+        lan_gateway_port: <gateway_port> # Default 20199
 ```

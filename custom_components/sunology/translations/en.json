@@ -6,7 +6,8 @@
           "title": "Set up Sunology e-Hub",
           "description": "Setup the gateway",
           "data": {
-            "lan_gateway_ip": "Host ip"
+            "lan_gateway_host": "Host ip or host",
+            "lan_gateway_port": "Host port"
           }
         }
       },
