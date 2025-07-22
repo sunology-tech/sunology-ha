@@ -1,8 +1,6 @@
 {
-    "name": "Subology integration",
-    "content_in_root": false,
-    "render_readme": true,
-    "domains": ["solar", "sensor", "energy"],
-    "country": ["FR", "ES", "DE"],
-    "homeassistant": "2024.10.0"
-  }
+  "name": "Sunology integration",
+  "render_readme": true,
+  "country": ["FR", "ES", "DE"],
+  "homeassistant": "2024.10.0"
+}

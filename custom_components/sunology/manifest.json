@@ -6,6 +6,8 @@
     "requirements": ["websockets>=14.1", "asyncio>=3.4.3"],
     "dependencies": ["zeroconf"],
     "codeowners": ["sunology-tech"],
+    "documentation": "https://github.com/sunology-tech/sunology-ha",
+    "issue_tracker": "https://github.com/sunology-tech/sunology-ha/issues",
     "integration_type": "hub",
     "version": "0.1.6",
     "zeroconf": ["_solarhome._tcp.local."]
