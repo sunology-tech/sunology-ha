@@ -322,6 +322,9 @@ class SunologyContext:
                     devices.append(PLAY(product_data))
                 case "STREAM_CONNECT":
                     devices.append(Gateway(product_data))
+                    if "devices" in product_data.keys():
+                        for hub_device in product_data['devices']:
+                            self.on_productInfo_callback(hub_device)
                 case "STOREY":
                     master = StoreyMaster(product_data)
 
