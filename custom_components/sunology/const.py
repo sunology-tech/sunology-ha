@@ -3,7 +3,8 @@ from enum import StrEnum
 
 DOMAIN = "sunology"
 
-CONF_GATEWAY_IP = "lan_gateway_ip"
+CONF_GATEWAY_HOST = "lan_gateway_host"
+CONF_GATEWAY_PORT = "lan_gateway_port"
 
 MIN_UNTIL_REFRESH = 2
 

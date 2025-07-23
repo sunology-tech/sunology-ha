@@ -36,7 +36,7 @@ async def main():
 
     x = threading.Thread(target=asyncio.run, args=(socket.mock_messages_forever(),))
     x.start()
-    await socket.connect(f"ws://Sun-48CA434B646C.local:20199/ws", None)
+    await socket.connect("Sun-48CA434B646C.local", 20199, None)
     ##x.join()
 
 asyncio.run(main())

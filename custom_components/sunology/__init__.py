@@ -5,6 +5,8 @@ import asyncio
 import logging
 from typing import Any, Mapping
 from datetime import timedelta
+from homeassistant.components import zeroconf
+from zeroconf import AddressResolver, IPVersion
 import math
 import time
 import json
@@ -43,7 +45,8 @@ from .device import (
 )
 
 from .const import (
-    CONF_GATEWAY_IP,
+    CONF_GATEWAY_HOST,
+    CONF_GATEWAY_PORT,
     MIN_UNTIL_REFRESH,
     DOMAIN,
     PACKAGE_NAME
@@ -54,7 +57,8 @@ _LOGGER = logging.getLogger(PACKAGE_NAME)
 CONFIG_SCHEMA = vol.Schema(
     {
         vol.Required(DOMAIN, default={}): {
-            vol.Optional(CONF_GATEWAY_IP): vol.All(str, vol.Length(min=3)),
+            vol.Optional(CONF_GATEWAY_HOST): vol.All(str, vol.Length(min=3)),
+            vol.Optional(CONF_GATEWAY_PORT): vol.All(int, vol.Range(min=1, max=65535))
         }
     },
     extra=vol.ALLOW_EXTRA,
@@ -79,11 +83,13 @@ async def async_setup(hass, config):
 async def async_setup_entry(hass, entry):
     """Set up Sunology entry."""
     config = hass.data[DOMAIN]["config"]
-    gateway_ip = config.get(CONF_GATEWAY_IP) or entry.data[CONF_GATEWAY_IP]
+    gateway_host = config.get(CONF_GATEWAY_HOST) or entry.data[CONF_GATEWAY_HOST] if CONF_GATEWAY_HOST in entry.data.keys() else None
+    gateway_port = config.get(CONF_GATEWAY_PORT) or entry.data[CONF_GATEWAY_PORT] if CONF_GATEWAY_PORT in entry.data.keys() else None
     context = SunologyContext(
         hass,
         entry,
-        gateway_ip
+        gateway_host,
+        gateway_port
     )
 
     _LOGGER.info("Context-setup and start the thread")
@@ -117,11 +123,13 @@ async def async_remove_config_entry_device(hass, config_entry, device_entry) -> 
 class SunologyContext:
     """Hold the current Sunology context."""
 
-    def __init__(self, hass, entry, gateway_ip):
+    def __init__(self, hass, entry, gateway_host, gateway_port):
         """Initialize an Sunology context."""
         self._hass = hass
         self._entry = entry
-        self._gateway_ip = gateway_ip
+        self._gateway_host = gateway_host
+        self._gateway_port = gateway_port
+
         self._sunology_devices = []
         self._sunology_devices_coordoned = []
         self._socket = None
@@ -135,9 +143,14 @@ class SunologyContext:
         return self._hass
 
     @property
-    def gateway_ip(self):
-        """ current gateway_ip """
-        return self._gateway_ip
+    def gateway_host(self):
+        """ current gateway_host """
+        return self._gateway_host
+    
+    @property
+    def gateway_port(self):
+        """ current gateway_port """
+        return self._gateway_port
 
     @property
     def sunology_devices(self):
@@ -148,6 +161,24 @@ class SunologyContext:
     def sunology_devices(self, devices):
         """ Sunology devices list """
         self._sunology_devices = devices
+
+    async def _connect(self, socket, host, port, token):
+        """connect to Sunology socket"""
+        _LOGGER.info("Sunology socket connection")
+        host_ip = host
+        if host.endswith('.local') or host.endswith('.local.'):
+            _LOGGER.debug(f"Resolve {host}")
+            aiozc = await zeroconf.async_get_async_instance(self.hass)
+            await aiozc.zeroconf.async_wait_for_start()
+            resolver = AddressResolver(host)
+            if await resolver.async_request(aiozc.zeroconf, 3000):
+                host_ip_obj = resolver.ip_addresses_by_version(IPVersion.All)
+                host_ip = str(host_ip_obj[0])
+                _LOGGER.debug(f"{host} IP addresses:", host_ip)
+            else:
+                _LOGGER.error(f"Name {host} not resolved")
+     
+        await socket.connect(host_ip, port, None)
 
     def connect_socket(self):
         """subscribe to Sunology socket"""
@@ -166,7 +197,7 @@ class SunologyContext:
         #     self._hass.async_create_task(socket.mock_messages_one_shot()), self._hass.loop
         # )
 
-        self._socket_thread = threading.Thread(target=asyncio.run, args=(socket.connect(f"ws://{self.gateway_ip}/ws", None),))
+        self._socket_thread = threading.Thread(target=asyncio.run, args=(self._connect(socket, self.gateway_host, self.gateway_port, None),))
         self._socket_thread.start()
 
         # oneshot_event_thread = threading.Thread(target=asyncio.run, args=(socket.mock_messages_forever(),))
@@ -237,7 +268,7 @@ class SunologyContext:
         epoch_min = math.floor(time.time()/60)
         if not self._socket.is_connected and not self._socket_thread.is_alive():
             _LOGGER.info("Socket not connected detected, atempt: %s", self._connection_atempt)
-            self._socket_thread = threading.Thread(target=asyncio.run, args=(self._socket.connect(f"ws://{self.gateway_ip}/ws", None),))
+            self._socket_thread = threading.Thread(target=asyncio.run, args=(self._connect(self.socket, self.gateway_host, self.gateway_port, None),))
             self._socket_thread.start()
             self._connection_atempt+=1
 
@@ -285,13 +316,16 @@ class SunologyContext:
         if not found:
             devices = []
             match product_data['productName']:
-                case "PLAYMax":
+                case "PLAY_MAX":
                     devices.append(PLAYMax(product_data))
                 case "PLAY":
                     devices.append(PLAY(product_data))
-                case "EHub":
+                case "STREAM_CONNECT":
                     devices.append(Gateway(product_data))
-                case "Storey":
+                    if "devices" in product_data.keys():
+                        for hub_device in product_data['devices']:
+                            self.on_productInfo_callback(hub_device)
+                case "STOREY":
                     master = StoreyMaster(product_data)
 
                     master.capacity = product_data['battery']['capacity']
@@ -309,9 +343,9 @@ class SunologyContext:
                             st_pack.maxOutput = pack['maxProd']
                             devices.append(st_pack)
                     devices.append(master)
-                case "STREAMMeter":
+                case "STREAM_METER":
                     devices.append(SmartMeter_3P(product_data))
-                case "LinkyTransmitter":
+                case "STREAM_LINK":
                     devices.append(LinkyTransmitter(product_data))
                     
                 case _:
@@ -409,7 +443,7 @@ class SunologyContext:
     def on_disconnect_callback(self):
         """on gridEvent callback"""
         _LOGGER.info("On disconnect received %s", self._connection_atempt)
-        self._socket_thread = threading.Thread(target=asyncio.run, args=(self._socket.connect(f"ws://{self.gateway_ip}/ws", None),))
+        self._socket_thread = threading.Thread(target=asyncio.run, args=(self._connect(self.socket, self.gateway_host, self.gateway_port, None),))
         self._socket_thread.start()
         self._connection_atempt+=1
 

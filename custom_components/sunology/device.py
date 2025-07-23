@@ -77,7 +77,9 @@ class SunologyAbstractDevice():
     def update_product(self, raw_event):
         if 'rssi' in raw_event.keys():
             self._rssi = raw_event['rssi']
-        
+        if 'rssiWifi' in raw_event.keys():
+            self._rssi = raw_event['rssiWifi']
+
         if 'sw_version' in raw_event.keys():
             self._software_version = raw_event['swVersion']
 
@@ -193,17 +195,17 @@ class BatteryEventInterface():
     def cellsTmp(self):
         """return the cellsTmp value"""
         return self._cellsTmp
- 
+
     @property
     def radTmp(self):
         """return the radTmp value"""
         return self._radTmp
- 
+    
     @property
     def targetPow(self):
         """return the targetPow value"""
         return self._targetPow
- 
+    
     @property
     def dcCurrent(self):
         """return the dcCurrent value"""
@@ -213,12 +215,12 @@ class BatteryEventInterface():
     def dcVoltage(self):
         """return the dcVoltage value"""
         return self._dcVoltage
- 
+    
     @property
     def energyCons(self):
         """return the energyCons value"""
         return self._energyCons
- 
+    
     @property
     def energyProd(self):
         """return the energyProd value"""

@@ -117,13 +117,14 @@ class SunologySocket():
         except Exception as err :
             _LOGGER.warning(f"Non json event received: {message}, {err=}, {type(err)=}")
 
-    async def connect(self, lan_host, auth_token):
+    async def connect(self, lan_host_ip, lan_port, auth_token, basepath="ws"):
         """ connect to the sunology socket"""
-        _LOGGER.debug('Socket connection call %s', lan_host)
+        _LOGGER.debug('Socket connection call %s', lan_host_ip)
         if not self._connected:
+            _LOGGER.debug('Socket not connected')
             if auth_token is not None:
                 _LOGGER.debug('Auth connection')
-                async with connect(lan_host, additional_headers={'token': auth_token}) as websocket:
+                async with connect(f"ws://{lan_host_ip}:{lan_port}/{basepath}", additional_headers={'token': auth_token}) as websocket:
                     try:
                         self._socket = websocket
                         self._connected = True
@@ -136,7 +137,7 @@ class SunologySocket():
                         
             else:
                 _LOGGER.debug('Unauth connection')
-                async with connect(lan_host) as websocket :
+                async with connect(f"ws://{lan_host_ip}:{lan_port}/{basepath}") as websocket :
                     try:
                         self._socket = websocket
                         self._connected = True
