@@ -735,28 +735,32 @@ class SunologyBatterySocSensorEntity(CoordinatorEntity, SensorEntity):
     def icon(self):
         """icon getter"""
         icon = "mdi:battery-alert-variant-outline"
-        if self.state < 10:
-            icon = "mdi:battery-outline"
-        elif self.state < 20:
-            icon = "mdi:battery-10"
-        elif self.state < 30:
-            icon = "mdi:battery-20"
-        elif self.state < 40:
-            icon = "mdi:battery-30"
-        elif self.state < 50:
-            icon = "mdi:battery-40"
-        elif self.state < 60:
-            icon = "mdi:battery-50"
-        elif self.state < 70:
-            icon = "mdi:battery-60"
-        elif self.state < 80:
-            icon = "mdi:battery-70"
-        elif self.state < 90:
-            icon = "mdi:battery-80"
-        elif self.state < 100:
-            icon = "mdi:battery-90"
+        if self.state is not None:
+            if self.state < 10:
+                icon = "mdi:battery-outline"
+            elif self.state < 20:
+                icon = "mdi:battery-10"
+            elif self.state < 30:
+                icon = "mdi:battery-20"
+            elif self.state < 40:
+                icon = "mdi:battery-30"
+            elif self.state < 50:
+                icon = "mdi:battery-40"
+            elif self.state < 60:
+                icon = "mdi:battery-50"
+            elif self.state < 70:
+                icon = "mdi:battery-60"
+            elif self.state < 80:
+                icon = "mdi:battery-70"
+            elif self.state < 90:
+                icon = "mdi:battery-80"
+            elif self.state < 100:
+                icon = "mdi:battery-90"
+            else:
+                icon = "mdi:battery"
         else:
-            icon = "mdi:battery"
+            icon = "mdi:battery-alert-variant-outline"
+
 
         return icon
     @property

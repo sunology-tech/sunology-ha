@@ -77,9 +77,10 @@ class SunologyAbstractDevice():
     def update_product(self, raw_event):
         if 'rssi' in raw_event.keys():
             self._rssi = raw_event['rssi']
+        
         if 'rssiWifi' in raw_event.keys():
             self._rssi = raw_event['rssiWifi']
-
+        
         if 'sw_version' in raw_event.keys():
             self._software_version = raw_event['swVersion']
 
@@ -175,6 +176,9 @@ class BatteryEventInterface():
         self._dcVoltage = None
         self._energyCons = None
         self._energyProd = None
+        self._batTmp = None
+        self._batPct = None
+        self._batP = None
 
     @property
     def batP(self):
@@ -195,17 +199,17 @@ class BatteryEventInterface():
     def cellsTmp(self):
         """return the cellsTmp value"""
         return self._cellsTmp
-
+ 
     @property
     def radTmp(self):
         """return the radTmp value"""
         return self._radTmp
-    
+ 
     @property
     def targetPow(self):
         """return the targetPow value"""
         return self._targetPow
-    
+ 
     @property
     def dcCurrent(self):
         """return the dcCurrent value"""
@@ -215,12 +219,12 @@ class BatteryEventInterface():
     def dcVoltage(self):
         """return the dcVoltage value"""
         return self._dcVoltage
-    
+ 
     @property
     def energyCons(self):
         """return the energyCons value"""
         return self._energyCons
-    
+ 
     @property
     def energyProd(self):
         """return the energyProd value"""
@@ -257,6 +261,7 @@ class PLAY(SunologyAbstractDevice, SolarEventInterface):
     def __init__(self, raw_play):
         """Initialize PLAYMax device."""
         super().__init__(raw_play)
+        SolarEventInterface.__init__(self, raw_play)
         self._pvP = None
         self._miP = None
 
@@ -286,6 +291,9 @@ class StoreyMaster(SunologyAbstractDevice, BatteryPackInterface, BatteryEventInt
     def __init__(self, raw_storey):
         """Initialize PLAYMax device."""
         super().__init__(raw_storey)
+
+        BatteryPackInterface.__init__(self, raw_storey)
+        BatteryEventInterface.__init__(self, raw_storey)
         self._unique_id: str = f"{raw_storey['id']}"
         self._status = None
         self._acVoltage = None
@@ -336,6 +344,8 @@ class StoreyPack(SunologyAbstractDevice, BatteryPackInterface, BatteryEventInter
     def __init__(self, raw_storey_pack, pack_index):
         """Initialize PLAYMax device."""
         super().__init__(raw_storey_pack)
+        BatteryPackInterface.__init__(self, raw_storey_pack)
+        BatteryEventInterface.__init__(self, raw_storey_pack)
         self._unique_id: str = f"{raw_storey_pack['id']}#{pack_index}"
         self._parent_id: str = f"{raw_storey_pack['id']}"
         self._name: str = raw_storey_pack['name'] if 'name' in raw_storey_pack.keys() else f"{self.model_name} {self._unique_id}"
@@ -366,6 +376,8 @@ class PLAYMax(SunologyAbstractDevice, SolarEventInterface, BatteryEventInterface
     def __init__(self, raw_playmax):
         """Initialize PLAYMax device."""
         super().__init__(raw_playmax)
+        SolarEventInterface.__init__(self, raw_playmax)
+        BatteryEventInterface.__init__(self, raw_playmax)
         self._batP = None
         self._batPct = None
         self._batTmp = None
