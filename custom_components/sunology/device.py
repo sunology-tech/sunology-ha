@@ -14,7 +14,7 @@ class SunologyAbstractDevice():
         self._device_entry_id = None
         self._parent_id: str = raw_device['parentId'] if 'parentId' in raw_device.keys() else None
         self._name: str = raw_device['name'] if 'name' in raw_device.keys() else f"{self.model_name} {self.device_id}"
-        self._rssi: int = raw_device['rssi'] if 'rssi' in raw_device.keys() else None
+        self._rssi: int = raw_device['rssi'] if 'rssi' in raw_device.keys() else raw_device['rssiWifi'] if 'rssiWifi' in raw_device.keys() else None
 
     @property
     def default_manufacturer(self) -> str:
