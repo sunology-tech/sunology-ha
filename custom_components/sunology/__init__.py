@@ -83,8 +83,8 @@ async def async_setup(hass, config):
 async def async_setup_entry(hass, entry):
     """Set up Sunology entry."""
     config = hass.data[DOMAIN]["config"]
-    gateway_host = config.get(CONF_GATEWAY_HOST) or entry.data[CONF_GATEWAY_HOST]
-    gateway_port = config.get(CONF_GATEWAY_PORT) or entry.data[CONF_GATEWAY_PORT]
+    gateway_host = config.get(CONF_GATEWAY_HOST) or entry.data[CONF_GATEWAY_HOST] if CONF_GATEWAY_HOST in entry.data.keys() else None
+    gateway_port = config.get(CONF_GATEWAY_PORT) or entry.data[CONF_GATEWAY_PORT] if CONF_GATEWAY_PORT in entry.data.keys() else None
     context = SunologyContext(
         hass,
         entry,
@@ -316,13 +316,13 @@ class SunologyContext:
         if not found:
             devices = []
             match product_data['productName']:
-                case "PLAYMax":
+                case "PLAY_MAX":
                     devices.append(PLAYMax(product_data))
                 case "PLAY":
                     devices.append(PLAY(product_data))
-                case "EHub":
+                case "STREAM_CONNECT":
                     devices.append(Gateway(product_data))
-                case "Storey":
+                case "STOREY":
                     master = StoreyMaster(product_data)
 
                     master.capacity = product_data['battery']['capacity']
@@ -340,9 +340,9 @@ class SunologyContext:
                             st_pack.maxOutput = pack['maxProd']
                             devices.append(st_pack)
                     devices.append(master)
-                case "STREAMMeter":
+                case "STREAM_METER":
                     devices.append(SmartMeter_3P(product_data))
-                case "LinkyTransmitter":
+                case "STREAM_LINK":
                     devices.append(LinkyTransmitter(product_data))
                     
                 case _:

@@ -48,6 +48,7 @@ class SunologyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """ handle info to help to configure Sunology """
         await self.async_set_unique_id(discovery_info.hostname)
         self._abort_if_unique_id_configured()
+        _LOGGER.info("New device dicovered %s", discovery_info)
         if discovery_info is not None:
             self.hostname = discovery_info.hostname
             self.port = discovery_info.port
