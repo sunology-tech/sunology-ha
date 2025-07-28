@@ -177,7 +177,7 @@ class SunologyContext:
                 _LOGGER.debug(f"{host} IP addresses:", host_ip)
             else:
                 _LOGGER.error(f"Name {host} not resolved")
-     
+        
         await socket.connect(host_ip, port, None)
 
     def connect_socket(self):
@@ -261,6 +261,12 @@ class SunologyContext:
         }
         self._sunology_devices_coordoned.append(coordoned_device)
         return coordinator
+    
+    def remove_devices_from_coordinator(self, device: SunologyAbstractDevice):
+ 
+        for coordoned_device in self._sunology_devices_coordoned:
+            if device['device'].unique_id == coordoned_device['device'].unique_id:
+                self._sunology_devices_coordoned.pop(coordoned_device)
 
     async def refresh_devices(self):
         """ here we return last device by id"""
@@ -302,7 +308,7 @@ class SunologyContext:
         """set the Sunology socket"""
         self._socket = socket
 
-   
+    
     @callback
     def on_productInfo_callback(self, product_data):
         """on device callback"""
@@ -312,6 +318,30 @@ class SunologyContext:
             if device.device_id == product_data['id']:
                 device.update_product(product_data)
                 found = True
+                if product_data['productName'] == "STOREY":
+                    new_packs = []
+                    for sub_device in self._sunology_devices:
+                        if isinstance(sub_device, StoreyPack) and sub_device.device_id.split("#")[0] == device.device_id:
+                            pack_index = int(device_id.split("#")[1])
+                            if pack_index + 1 > product_data['packsCount']:
+                                self._sunology_devices.pop(sub_device)
+                                self.remove_devices_from_coordinator(sub_device)
+                    
+                    for pack in product_data['packs']:
+                        pack_found = False
+                        for sub_device in self._sunology_devices:
+                            if sub_device.device_id == f"{product_data['id']}#{pack['packIndex']}":
+                                pack_found = True
+                                sub_device.update_product(product_data)
+                                break
+                        if not pack_found:
+                            st_pack = StoreyPack(product_data, pack['packIndex'])
+                            st_pack.capacity = pack['capacity']
+                            st_pack.maxInput = pack['maxCons']
+                            st_pack.maxOutput = pack['maxProd']
+                            new_packs.append(st_pack)
+                    self._sunology_devices.extend(new_packs)
+                    coordinator = self.add_devices_to_coordinator(new_packs)
                 break
         if not found:
             devices = []
