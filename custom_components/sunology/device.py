@@ -1,7 +1,10 @@
 """Home Assistant representation of an Sunology device."""
-from .const import SmartMeterPhase, SmartMeterTarifIndex,  DOMAIN as SUNOLOGY_DOMAIN
+from .const import SmartMeterPhase, SmartMeterTarifIndex,  DOMAIN as SUNOLOGY_DOMAIN, PACKAGE_NAME
 from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntry
 from typing import List
+import logging
+
+_LOGGER = logging.getLogger(PACKAGE_NAME)
 
 class SunologyAbstractDevice():
     """Home Assistant representation of a Sunology abstract device."""
@@ -78,10 +81,10 @@ class SunologyAbstractDevice():
         if 'rssi' in raw_event.keys():
             self._rssi = raw_event['rssi']
         
-        if 'rssiWifi' in raw_event.keys():
+        elif 'rssiWifi' in raw_event.keys():
             self._rssi = raw_event['rssiWifi']
         
-        if 'sw_version' in raw_event.keys():
+        if 'swVersion' in raw_event.keys():
             self._software_version = raw_event['swVersion']
 
     
@@ -124,8 +127,8 @@ class SolarEventInterface():
         return self._miP
     
     def solar_event_update(self, data):
-        self._miP = data['miP']
-        self._pvP = data['pvP']
+        self._miP = data['miP'] if 'miP' in data.keys() else _LOGGER.warning(f"Solar event receive without the required miP {data}")
+        self._pvP = data['pvP'] if 'pvP' in data.keys() else _LOGGER.warning(f"Solar event receive without the required pvP {data}")
 
 class BatteryPackInterface():
     """Sunology extra porperties for events."""
@@ -234,10 +237,9 @@ class BatteryEventInterface():
         """Return the miP value"""
         """ 
         """
-
-        self._batP = data['batPow']
-        self._batPct = data['batPct']
-        self._batTmp = data['batTmp']
+        self._batP = data['batPow'] if 'batPow' in data.keys() else _LOGGER.warning(f"Battery event receive without the required batPow {data}")
+        self._batPct = data['batPct'] if 'batPct' in data.keys() else _LOGGER.warning(f"Battery event receive without the required batPct {data}") 
+        self._batTmp = data['batTmp'] if 'batTmp' in data.keys() else _LOGGER.warning(f"Battery event receive without the required batTmp {data}") 
         if 'cellsTmp' in data.keys():
             self._cellsTmp = data['cellsTmp']
         if 'radTmp' in data.keys():
