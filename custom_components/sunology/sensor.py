@@ -129,8 +129,8 @@ class SunologPvPowerSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        pvP = self._device.pvP
-        return pvP
+        self._state = self._device.pvP
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -188,8 +188,8 @@ class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        miP = self._device.miP
-        return miP
+        self._state = self._device.miP
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -248,8 +248,8 @@ class SunologyBatteryPowerSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        batP = self._device.batP
-        return batP
+        self._state = self._device.batP
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -307,8 +307,8 @@ class SunologyBatteryTargetPowerSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        state = self._device.targetPow
-        return state
+        self._state = self._device.targetPow
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -366,8 +366,8 @@ class SunologyBatteryDcVoltageSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        state = self._device.dcVoltage
-        return state
+        self._state = self._device.dcVoltage
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -426,8 +426,8 @@ class SunologyBatteryMasterAcVoltageSensorEntity(CoordinatorEntity, SensorEntity
     @property
     def state(self):
         """state property"""
-        state = self._device.acVoltage
-        return state
+        self._state = self._device.acVoltage
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -485,8 +485,8 @@ class SunologyBatteryDcCurrentSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        state = self._device.dcCurrent
-        return state
+        self._state = self._device.dcCurrent
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -517,12 +517,13 @@ class SunologyBatteryDcCurrentSensorEntity(CoordinatorEntity, SensorEntity):
     def state_class(self):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
+    
 
 class SunologyBatteryEnergyProducedSensorEntity(CoordinatorEntity, SensorEntity):
     """Represent a mipower of a  device."""
 
     def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+                    device:SunologyAbstractDevice, hass):
         """Set up SunologyBatteryEnergyProducedSensor entity."""
         super().__init__(coordinator)
         self._device = device
@@ -531,6 +532,7 @@ class SunologyBatteryEnergyProducedSensorEntity(CoordinatorEntity, SensorEntity)
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"energyProd")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
         self._state = None
         self._hass = hass
+        self._last_reset = '1970-01-01T00:00:00+00:00'
 
     @property
     def entity_category(self):
@@ -544,8 +546,8 @@ class SunologyBatteryEnergyProducedSensorEntity(CoordinatorEntity, SensorEntity)
     @property
     def state(self):
         """state property"""
-        state = self._device.energyProd
-        return state
+        self._state = self._device.energyProd
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -575,7 +577,12 @@ class SunologyBatteryEnergyProducedSensorEntity(CoordinatorEntity, SensorEntity)
     @property
     def state_class(self):
         """ Entity state_class """
-        return SensorStateClass.MEASUREMENT
+        return SensorStateClass.TOTAL
+    
+    # @property
+    # def last_reset(self):
+    #     """ last sensor reset"""
+    #     return self._last_reset
 
 
 class SunologyBatteryEnergyConsumedSensorEntity(CoordinatorEntity, SensorEntity):
@@ -591,6 +598,8 @@ class SunologyBatteryEnergyConsumedSensorEntity(CoordinatorEntity, SensorEntity)
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"energyCons")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
         self._state = None
         self._hass = hass
+        self._last_reset = '1970-01-01T00:00:00+00:00'
+
 
     @property
     def entity_category(self):
@@ -604,8 +613,8 @@ class SunologyBatteryEnergyConsumedSensorEntity(CoordinatorEntity, SensorEntity)
     @property
     def state(self):
         """state property"""
-        state = self._device.energyCons
-        return state
+        self._state = self._device.energyCons
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -635,7 +644,12 @@ class SunologyBatteryEnergyConsumedSensorEntity(CoordinatorEntity, SensorEntity)
     @property
     def state_class(self):
         """ Entity state_class """
-        return SensorStateClass.MEASUREMENT
+        return SensorStateClass.TOTAL
+    
+    # @property
+    # def last_reset(self):
+    #     """ last sensor reset"""
+    #     return self._last_reset
 
 
 class SunologyBatteryMasterStatusSensorEntity(CoordinatorEntity, SensorEntity):
@@ -663,8 +677,8 @@ class SunologyBatteryMasterStatusSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        state = self._device.status
-        return state
+        self._state = self._device.status
+        return self._state
 
     @property
     def name(self):
@@ -718,8 +732,8 @@ class SunologyBatterySocSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        batP = self._device.batPct
-        return batP
+        self._state = self._device.batPct
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -800,8 +814,8 @@ class SunologyBatteryTempSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        batP = self._device.batTmp
-        return batP
+        self._state = self._device.batTmp
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -858,8 +872,8 @@ class SunologyBatteryCellsTempSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        batP = self._device.batTmp
-        return batP
+        self._state = self._device.batTmp
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -917,8 +931,8 @@ class SunologyBatteryRadTempSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        batP = self._device.radTmp
-        return batP
+        self._state = self._device.radTmp
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -976,8 +990,8 @@ class SunologyBatteryMasterPowerSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        power = self._device.power
-        return power
+        self._state = self._device.power
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -1045,8 +1059,8 @@ class SunologyElectricalDataSensorEntity_Power(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        edPower = self._device.electrical_data[self._phase].power
-        return edPower
+        self._state = self._device.electrical_data[self._phase].power
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -1110,7 +1124,8 @@ class SunologyTotalExportSensorEntity(CoordinatorEntity, SensorEntity):
             prod_tot = self._device.electrical_data[self._phase].prod_tot
         elif isinstance(self._device, LinkyTransmitter):
             prod_tot = self._device.indexes_erl.energy_produced_total
-        return prod_tot
+        self._state = prod_tot
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -1169,12 +1184,13 @@ class SunologyTotalImportSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        conso_tot = 0
+        conso_tot = None
         if isinstance(self._device, SmartMeter_3P):
             conso_tot = self._device.electrical_data[self._phase].conso_tot
         elif isinstance(self._device, LinkyTransmitter):
             conso_tot = self._device.indexes_erl.energy_consumed_total
-        return conso_tot
+        self._state = conso_tot
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -1232,8 +1248,8 @@ class SunologyImportSensorEntity_PeriodIndex(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        conso_tot = self._device.indexes_erl.energy_consumed_indexed[self._tarif_index]
-        return conso_tot
+        self._state = self._device.indexes_erl.energy_consumed_indexed[self._tarif_index]
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -1291,8 +1307,8 @@ class SunologyElectricityFrequencySensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        prod_tot = self._device.freq
-        return prod_tot
+        self._state = self._device.freq
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -1346,8 +1362,8 @@ class SunologyRssiSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        prod_tot = self._device.rssi
-        return prod_tot
+        self._state = self._device.rssi
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -1405,8 +1421,8 @@ class SunologyApparentPowerExportSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        prod_tot = self._device.app_power_prod
-        return prod_tot
+        self._state = self._device.app_power_prod
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -1459,8 +1475,8 @@ class SunologyApparentPowerImportSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        prod_tot = self._device.app_power_usage
-        return prod_tot
+        self._state = self._device.app_power_usage
+        return self._state
 
     @property
     def unit_of_measurement(self):
@@ -1512,8 +1528,8 @@ class SunologyContractSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        contract = self._device.indexes_erl.contract
-        return contract
+        self._state = self._device.indexes_erl.contract
+        return self._state
 
     @property
     def name(self):
@@ -1555,8 +1571,8 @@ class SunologyCurrentTarifSensorEntity(CoordinatorEntity, SensorEntity):
     @property
     def state(self):
         """state property"""
-        contract = self._device.indexes_erl.current_tarif
-        return contract
+        self._state = self._device.indexes_erl.current_tarif
+        return self._state
 
     @property
     def name(self):
