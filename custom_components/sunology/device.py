@@ -544,7 +544,7 @@ class LinkyTransmitter(SunologyAbstractDevice):
     """Home Assistant representation of a Sunology device Smart."""
 
     def __init__(self, raw_smartmeter):
-        """Initialize LinkyTransmitter device."""
+        """Initialize STREAM Link device."""
         super().__init__(raw_smartmeter)
         self._app_power_usage = None
         self._app_power_prod = None
@@ -568,7 +568,7 @@ class LinkyTransmitter(SunologyAbstractDevice):
     @property
     def model_name(self) -> str:
         """Get the model name."""
-        return "Linky Transmitter"
+        return "STREAM Link"
     
     @property
     def device_info(self):

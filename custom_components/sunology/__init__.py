@@ -7,6 +7,7 @@ from typing import Any, Mapping
 from datetime import timedelta
 from homeassistant.components import zeroconf
 from zeroconf import AddressResolver, IPVersion
+from zeroconf.asyncio import AsyncZeroconf
 import math
 import time
 import json
@@ -168,6 +169,7 @@ class SunologyContext:
         host_ip = host
         if host.endswith('.local') or host.endswith('.local.'):
             _LOGGER.debug(f"Resolve {host}")
+            aiozc = AsyncZeroconf()
             aiozc = await zeroconf.async_get_async_instance(self.hass)
             await aiozc.zeroconf.async_wait_for_start()
             resolver = AddressResolver(host)
@@ -375,7 +377,7 @@ class SunologyContext:
                     devices.append(master)
                 case "STREAM_METER":
                     devices.append(SmartMeter_3P(product_data))
-                case "STREAM_LINK":
+                case "ERL_GEN2":
                     devices.append(LinkyTransmitter(product_data))
                     
                 case _:

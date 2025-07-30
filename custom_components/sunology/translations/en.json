@@ -3,7 +3,7 @@
       "title": "Sunology",
       "step": {
         "sunology_setup": {
-          "title": "Set up Sunology e-Hub",
+          "title": "Set up Sunology STREAM Connect",
           "description": "Setup the gateway",
           "data": {
             "lan_gateway_host": "Host ip or host",

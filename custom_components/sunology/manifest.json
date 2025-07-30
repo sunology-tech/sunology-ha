@@ -10,5 +10,7 @@
     "issue_tracker": "https://github.com/sunology-tech/sunology-ha/issues",
     "integration_type": "hub",
     "version": "0.1.6",
-    "zeroconf": ["_solarhome._tcp.local."]
+    "zeroconf": [{
+        "name": "Sunology-HB-*", "type": "_solarhome._tcp.local."
+    }]
 }

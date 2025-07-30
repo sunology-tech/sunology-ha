@@ -9,7 +9,9 @@ from .const import CONF_GATEWAY_HOST, CONF_GATEWAY_PORT, DOMAIN, PACKAGE_NAME
 
 _LOGGER = logging.getLogger(PACKAGE_NAME)
 
-@config_entries.HANDLERS.register(DOMAIN)
+DEFAULT_PORT = 20199
+
+# @config_entries.HANDLERS.register(DOMAIN)
 class SunologyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Sunology config flow """
 
@@ -48,6 +50,7 @@ class SunologyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         """ handle info to help to configure Sunology """
         await self.async_set_unique_id(discovery_info.hostname)
         self._abort_if_unique_id_configured()
+        
         _LOGGER.info("Unknown error %s", discovery_info)
         if discovery_info is not None:
             self.hostname = discovery_info.hostname
