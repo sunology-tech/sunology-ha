@@ -316,7 +316,8 @@ class SunologyContext:
         """on device callback"""
         _LOGGER.info("On device received '%s'", product_data['productName'])
         found = False
-        for device in self._sunology_devices:
+        for coordoned_device in self._sunology_devices_coordoned:
+            device = coordoned_device['device']
             if device.device_id == product_data['id']:
                 device.update_product(product_data)
                 found = True
@@ -408,10 +409,11 @@ class SunologyContext:
                     "device_id": device.unique_id,
                     "device_name": device.name,
                 }
+                if 'device_entities' in coordoned_device.keys():
+                    for entity in coordoned_device['device_entities']:
+                        _LOGGER.debug('Update entity %s', entity.entity_id)
+                        entity.schedule_update_ha_state(force_refresh=False)
                 
-                asyncio.run_coroutine_threadsafe(
-                    coordinator.async_request_refresh(), self._hass.loop
-                ).result()
                 break
     
     @callback
@@ -426,19 +428,23 @@ class SunologyContext:
                     device.status = data['status']
                     device.acVoltage = data['acVoltage']
                     device.battery_event_update(data['battery'])
+                    
+                    for entity in coordoned_device['device_entities']:
+                        _LOGGER.debug('Update entity %s', entity.entity_id)
+                        entity.schedule_update_ha_state(force_refresh=False)
 
                     for pack in data['packs']:
                             for sub_coordoned_device in self._sunology_devices_coordoned:
                                 sub_device = sub_coordoned_device['device']
                                 if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":
                                     sub_device.battery_event_update(pack)
+                                    for entity in sub_coordoned_device['device_entities']:
+                                        _LOGGER.debug('Update entity %s', entity.entity_id)
+                                        entity.schedule_update_ha_state(force_refresh=False)
                                     break
                 else:
                     _LOGGER.info("Solar event receive on non storey master device")
 
-                asyncio.run_coroutine_threadsafe(
-                    coordinator.async_request_refresh(), self._hass.loop
-                ).result()
                 break
 
     
@@ -450,10 +456,11 @@ class SunologyContext:
             device = coordoned_device['device']
             coordinator = coordoned_device['coordinator']
             if device.device_id == data['id']:
-                if isinstance(device, SmartMeter_3P):
+                if isinstance(device, (SmartMeter_3P, LinkyTransmitter)):
                     device.update_gridevent(data)
-                elif isinstance(device, LinkyTransmitter):
-                    device.update_gridevent(data)
+                    for entity in coordoned_device['device_entities']:
+                        _LOGGER.debug('Update entity %s', entity.entity_id)
+                        entity.schedule_update_ha_state(force_refresh=False)
                 else:
                     _LOGGER.info("Grid event receive on non grid meter device")
                 event_data = {
@@ -461,9 +468,6 @@ class SunologyContext:
                     "device_name": device.name,
                 }
                 
-                asyncio.run_coroutine_threadsafe(
-                    coordinator.async_request_refresh(), self._hass.loop
-                ).result()
                 break
     @callback
     def on_connect_callback(self):

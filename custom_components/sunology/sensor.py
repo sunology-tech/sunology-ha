@@ -41,59 +41,59 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
         coordoned_device['device_entities'] = []
         hass.data[SUNOLOGY_DOMAIN]["devices"][device.device_id] = coordinator
         if isinstance(device, SolarEventInterface):
-            coordoned_device['device_entities'].append(SunologPvPowerSensorEntity(coordinator, device, hass))
-            coordoned_device['device_entities'].append(SunologMiPowerSensorEntity(coordinator, device, hass))
+            coordoned_device['device_entities'].append(SunologPvPowerSensorEntity(device, hass))
+            coordoned_device['device_entities'].append(SunologMiPowerSensorEntity(device, hass))
 
         if isinstance(device, BatteryEventInterface):
-            coordoned_device['device_entities'].append(SunologyBatteryPowerSensorEntity(coordinator, device, hass))
-            coordoned_device['device_entities'].append(SunologyBatterySocSensorEntity(coordinator, device, hass))
-            coordoned_device['device_entities'].append(SunologyBatteryTempSensorEntity(coordinator, device, hass))
+            coordoned_device['device_entities'].append(SunologyBatteryPowerSensorEntity(device, hass))
+            coordoned_device['device_entities'].append(SunologyBatterySocSensorEntity(device, hass))
+            coordoned_device['device_entities'].append(SunologyBatteryTempSensorEntity(device, hass))
             if(isinstance(device,(StoreyMaster, StoreyPack))):
-                coordoned_device['device_entities'].append(SunologyBatteryCellsTempSensorEntity(coordinator, device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryRadTempSensorEntity(coordinator, device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryTargetPowerSensorEntity(coordinator, device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryDcVoltageSensorEntity(coordinator, device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryDcCurrentSensorEntity(coordinator, device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryEnergyProducedSensorEntity(coordinator, device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryEnergyConsumedSensorEntity(coordinator, device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryCellsTempSensorEntity(device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryRadTempSensorEntity(device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryTargetPowerSensorEntity(device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryDcVoltageSensorEntity(device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryDcCurrentSensorEntity(device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryEnergyProducedSensorEntity(device, hass))
+                coordoned_device['device_entities'].append(SunologyBatteryEnergyConsumedSensorEntity(device, hass))
         
         if isinstance(device, StoreyMaster):
-            coordoned_device['device_entities'].append(SunologyBatteryMasterStatusSensorEntity(coordinator, device, hass))
-            coordoned_device['device_entities'].append(SunologyBatteryMasterAcVoltageSensorEntity(coordinator, device, hass))
+            coordoned_device['device_entities'].append(SunologyBatteryMasterStatusSensorEntity(device, hass))
+            coordoned_device['device_entities'].append(SunologyBatteryMasterAcVoltageSensorEntity(device, hass))
 
         if isinstance(device, SmartMeter_3P):
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(coordinator, device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
-            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
-            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(coordinator, device,  SmartMeterPhase.PHASE_3, hass))
-            coordoned_device['device_entities'].append(SunologyElectricityFrequencySensorEntity(coordinator, device, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_1, hass))
+            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
+            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_2, hass))
+            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
+            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
+            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_3, hass))
+            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
+            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
+            coordoned_device['device_entities'].append(SunologyElectricityFrequencySensorEntity(device, hass))
         if isinstance(device, LinkyTransmitter):
-            coordoned_device['device_entities'].append(SunologyApparentPowerImportSensorEntity(coordinator, device, hass))
-            coordoned_device['device_entities'].append(SunologyApparentPowerExportSensorEntity(coordinator, device, hass))
-            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(coordinator, device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(coordinator, device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_1, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_2, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_3, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_4, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_5, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_6, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_7, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_8, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_9, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(coordinator, device,  SmartMeterTarifIndex.INDEX_10, hass))
-            coordoned_device['device_entities'].append(SunologyContractSensorEntity(coordinator, device, hass))
-            coordoned_device['device_entities'].append(SunologyCurrentTarifSensorEntity(coordinator, device, hass))
+            coordoned_device['device_entities'].append(SunologyApparentPowerImportSensorEntity(device, hass))
+            coordoned_device['device_entities'].append(SunologyApparentPowerExportSensorEntity(device, hass))
+            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_1, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_2, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_3, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_4, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_5, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_6, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_7, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_8, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_9, hass))
+            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_10, hass))
+            coordoned_device['device_entities'].append(SunologyContractSensorEntity(device, hass))
+            coordoned_device['device_entities'].append(SunologyCurrentTarifSensorEntity(device, hass))
 
-        coordoned_device['device_entities'].append(SunologyRssiSensorEntity(coordinator, device, hass))
+        coordoned_device['device_entities'].append(SunologyRssiSensorEntity(device, hass))
 
 
         entities.extend(coordoned_device['device_entities'])
@@ -102,13 +102,11 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
 
     return True
 
-class SunologPvPowerSensorEntity(CoordinatorEntity, SensorEntity):
+class SunologPvPowerSensorEntity(SensorEntity):
     """Represent a pvpower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologPvPowerSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
@@ -162,13 +160,12 @@ class SunologPvPowerSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
-class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologMiPowerSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologMiPowerSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
@@ -221,14 +218,16 @@ class SunologMiPowerSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
+    @property
+    def should_poll(self) -> bool:
+        """No need to poll. Coordinator notifies entity of updates."""
+        return False
 
-class SunologyBatteryPowerSensorEntity(CoordinatorEntity, SensorEntity):
+class SunologyBatteryPowerSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologBatteryPowerSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
@@ -281,13 +280,16 @@ class SunologyBatteryPowerSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
-class SunologyBatteryTargetPowerSensorEntity(CoordinatorEntity, SensorEntity):
+    @property
+    def should_poll(self) -> bool:
+        """No need to poll. Coordinator notifies entity of updates."""
+        return False
+
+class SunologyBatteryTargetPowerSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologBatteryTargetPowerSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
@@ -340,13 +342,16 @@ class SunologyBatteryTargetPowerSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
-class SunologyBatteryDcVoltageSensorEntity(CoordinatorEntity, SensorEntity):
+    @property
+    def should_poll(self) -> bool:
+        """No need to poll. Coordinator notifies entity of updates."""
+        return False
+class SunologyBatteryDcVoltageSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyBatteryDcVoltageSensor entity."""
-        super().__init__(coordinator)
+        
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "V"
@@ -399,14 +404,16 @@ class SunologyBatteryDcVoltageSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
+    @property
+    def should_poll(self) -> bool:
+        """No need to poll. Coordinator notifies entity of updates."""
+        return False
 
-class SunologyBatteryMasterAcVoltageSensorEntity(CoordinatorEntity, SensorEntity):
+class SunologyBatteryMasterAcVoltageSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyBatteryAcVoltageSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "V"
@@ -459,13 +466,12 @@ class SunologyBatteryMasterAcVoltageSensorEntity(CoordinatorEntity, SensorEntity
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
-class SunologyBatteryDcCurrentSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyBatteryDcCurrentSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyBatteryDcCurrentSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "A"
@@ -517,15 +523,13 @@ class SunologyBatteryDcCurrentSensorEntity(CoordinatorEntity, SensorEntity):
     def state_class(self):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
-    
 
-class SunologyBatteryEnergyProducedSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyBatteryEnergyProducedSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                    device:SunologyAbstractDevice, hass):
+    def __init__(self,    device:SunologyAbstractDevice, hass):
         """Set up SunologyBatteryEnergyProducedSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "mWh"
@@ -584,14 +588,17 @@ class SunologyBatteryEnergyProducedSensorEntity(CoordinatorEntity, SensorEntity)
     #     """ last sensor reset"""
     #     return self._last_reset
 
+    @property
+    def should_poll(self) -> bool:
+        """No need to poll. Coordinator notifies entity of updates."""
+        return False
 
-class SunologyBatteryEnergyConsumedSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyBatteryEnergyConsumedSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyBatteryEnergyConsumedSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "mWh"
@@ -651,14 +658,16 @@ class SunologyBatteryEnergyConsumedSensorEntity(CoordinatorEntity, SensorEntity)
     #     """ last sensor reset"""
     #     return self._last_reset
 
+    @property
+    def should_poll(self) -> bool:
+        """No need to poll. Coordinator notifies entity of updates."""
+        return False
 
-class SunologyBatteryMasterStatusSensorEntity(CoordinatorEntity, SensorEntity):
+class SunologyBatteryMasterStatusSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyStatusSensorEntity entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"status")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
@@ -705,14 +714,16 @@ class SunologyBatteryMasterStatusSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity device_class """
         return SensorDeviceClass.ENUM
 
+    @property
+    def should_poll(self) -> bool:
+        """No need to poll. Coordinator notifies entity of updates."""
+        return False
         
-class SunologyBatterySocSensorEntity(CoordinatorEntity, SensorEntity):
+class SunologyBatterySocSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologBatteryPowerSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "%"
@@ -787,14 +798,16 @@ class SunologyBatterySocSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity device_class """
         return SensorDeviceClass.BATTERY
 
+    @property
+    def should_poll(self) -> bool:
+        """No need to poll. Coordinator notifies entity of updates."""
+        return False
 
-class SunologyBatteryTempSensorEntity(CoordinatorEntity, SensorEntity):
+class SunologyBatteryTempSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologBatteryPowerSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "°C"
@@ -846,13 +859,12 @@ class SunologyBatteryTempSensorEntity(CoordinatorEntity, SensorEntity):
     def state_class(self):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
-class SunologyBatteryCellsTempSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyBatteryCellsTempSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologBatteryPowerSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "°C"
@@ -905,13 +917,15 @@ class SunologyBatteryCellsTempSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
-class SunologyBatteryRadTempSensorEntity(CoordinatorEntity, SensorEntity):
+    @property
+    def should_poll(self) -> bool:
+        """No need to poll. Coordinator notifies entity of updates."""
+        return False
+class SunologyBatteryRadTempSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologBatteryRadTempSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "°C"
@@ -964,13 +978,12 @@ class SunologyBatteryRadTempSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
-class SunologyBatteryMasterPowerSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyBatteryMasterPowerSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologBatteryPowerSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
@@ -1024,13 +1037,12 @@ class SunologyBatteryMasterPowerSensorEntity(CoordinatorEntity, SensorEntity):
         return SensorStateClass.MEASUREMENT
 
 
-class SunologyElectricalDataSensorEntity_Power(CoordinatorEntity, SensorEntity):
+
+class SunologyElectricalDataSensorEntity_Power(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
-        """Set up SunologBatteryPowerSensor entity."""
-        super().__init__(coordinator)
+    def __init__(self, device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
+        """Set up SunologBatteryPowerSensor entity.""" 
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
@@ -1092,13 +1104,12 @@ class SunologyElectricalDataSensorEntity_Power(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
 
-class SunologyTotalExportSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyTotalExportSensorEntity(SensorEntity):
     """Represent energy surplus exported (energy produced) by a smart metter."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
+    def __init__(self, device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
         """Set up SunologyTotalExportSensorEntity entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "Wh"
@@ -1157,13 +1168,12 @@ class SunologyTotalExportSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.TOTAL_INCREASING
 
-class SunologyTotalImportSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyTotalImportSensorEntity(SensorEntity):
     """Represent energy imported (energy consumed) by a smart metter."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
+    def __init__(self, device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
         """Set up SunologyTotalImportSensorEntity entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "Wh"
@@ -1222,13 +1232,12 @@ class SunologyTotalImportSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.TOTAL_INCREASING
 
-class SunologyImportSensorEntity_PeriodIndex(CoordinatorEntity, SensorEntity):
+
+class SunologyImportSensorEntity_PeriodIndex(SensorEntity):
     """Represent energy imported (energy consumed) by a smart metter."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, tarif_index: SmartMeterTarifIndex, hass):
+    def __init__(self, device:SunologyAbstractDevice, tarif_index: SmartMeterTarifIndex, hass):
         """Set up SunologyTotalImportSensorEntity entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "Wh"
@@ -1281,13 +1290,12 @@ class SunologyImportSensorEntity_PeriodIndex(CoordinatorEntity, SensorEntity):
         """ Entity state_class """
         return SensorStateClass.TOTAL_INCREASING
 
-class SunologyElectricityFrequencySensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyElectricityFrequencySensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologBatteryPowerSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "Hz"
@@ -1336,13 +1344,12 @@ class SunologyElectricityFrequencySensorEntity(CoordinatorEntity, SensorEntity):
         return SensorDeviceClass.FREQUENCY
 
 
-class SunologyRssiSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyRssiSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologBatteryPowerSensor entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "dB"
@@ -1395,13 +1402,12 @@ class SunologyRssiSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity entity_category """
         return EntityCategory.DIAGNOSTIC
 
-class SunologyApparentPowerExportSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyApparentPowerExportSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyApparentPowerExportSensorEntity entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "VA"
@@ -1449,13 +1455,12 @@ class SunologyApparentPowerExportSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity device_class """
         return SensorDeviceClass.APPARENT_POWER
 
-class SunologyApparentPowerImportSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyApparentPowerImportSensorEntity( SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyApparentPowerImportSensorEntity entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "VA"
@@ -1503,13 +1508,12 @@ class SunologyApparentPowerImportSensorEntity(CoordinatorEntity, SensorEntity):
         """ Entity device_class """
         return SensorDeviceClass.APPARENT_POWER
 
-class SunologyContractSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyContractSensorEntity(SensorEntity):
     """Represent energy imported (energy consumed) by a smart metter."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyTotalImportSensorEntity entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"contract")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
@@ -1546,13 +1550,12 @@ class SunologyContractSensorEntity(CoordinatorEntity, SensorEntity):
         """Return the device info."""
         return self._device.device_info
 
-class SunologyCurrentTarifSensorEntity(CoordinatorEntity, SensorEntity):
+
+class SunologyCurrentTarifSensorEntity(SensorEntity):
     """Represent energy imported (energy consumed) by a smart metter."""
 
-    def __init__(self, coordinator: DataUpdateCoordinator[Mapping[str, Any]],
-                 device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyTotalImportSensorEntity entity."""
-        super().__init__(coordinator)
         self._device = device
         self._name = device.name
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"current_tarif")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
