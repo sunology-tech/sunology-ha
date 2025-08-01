@@ -9,14 +9,14 @@ Our website: https://www.sunology.eu
 ## Description
 This component offer you a way to add to PV System and EMS to your favorite SmartHome device.
 
-You need to have an Home assistant E-Hub
+You need to have an Home assistant and a Sunology STREAM Connect
 
 ## Options
 
 | Name | Type | Requirement | `default` Description
 | ---- | ---- | ------- | -----------
-| lan_gateway_host | string | **Required** | Sunology e-Hub lan ip.
-| lan_gateway_port | string | **Required** | Sunology e-Hub lan ip.
+| lan_gateway_host | string | **Required** | Sunology STREAM Connect lan ip.
+| lan_gateway_port | string | **Required** | Sunology STREAM Connect port.
 
 
 ## Technical add the logo for cusom integration:
