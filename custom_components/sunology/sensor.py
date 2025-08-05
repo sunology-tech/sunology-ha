@@ -594,7 +594,7 @@ class SunologyBatteryEnergyProducedSensorEntity(SensorEntity):
         return False
 
 
-class SunologyBatteryEnergyConsumedSensorEntity(SensorEntity):
+class SunologyBatteryEnergyConsumedSensorEntity( SensorEntity):
     """Represent a mipower of a  device."""
 
     def __init__(self, device:SunologyAbstractDevice, hass):
@@ -1514,6 +1514,7 @@ class SunologyContractSensorEntity(SensorEntity):
 
     def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyTotalImportSensorEntity entity."""
+        
         self._device = device
         self._name = device.name
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"contract")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
@@ -1556,6 +1557,7 @@ class SunologyCurrentTarifSensorEntity(SensorEntity):
 
     def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyTotalImportSensorEntity entity."""
+        
         self._device = device
         self._name = device.name
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"current_tarif")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301

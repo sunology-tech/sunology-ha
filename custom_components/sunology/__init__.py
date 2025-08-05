@@ -6,7 +6,7 @@ import logging
 from typing import Any, Mapping
 from datetime import timedelta
 from homeassistant.components import zeroconf
-from zeroconf import AddressResolver, IPVersion
+from zeroconf import AddressResolver, IPVersion, Zeroconf
 from zeroconf.asyncio import AsyncZeroconf
 import math
 import time
@@ -163,24 +163,23 @@ class SunologyContext:
         """ Sunology devices list """
         self._sunology_devices = devices
 
-    async def _connect(self, socket, host, port, token):
+    async def _async_connect(self, socket, host, port, token):
         """connect to Sunology socket"""
         _LOGGER.info("Sunology socket connection")
         host_ip = host
         if host.endswith('.local') or host.endswith('.local.'):
             _LOGGER.debug(f"Resolve {host}")
-            aiozc = AsyncZeroconf()
-            aiozc = await zeroconf.async_get_async_instance(self.hass)
-            await aiozc.zeroconf.async_wait_for_start()
+            zc = await zeroconf.async_get_instance(self._hass)
+            await zc.async_wait_for_start()
             resolver = AddressResolver(host)
-            if await resolver.async_request(aiozc.zeroconf, 3000):
+            if await resolver.async_request(zc, 3000):
                 host_ip_obj = resolver.ip_addresses_by_version(IPVersion.All)
                 host_ip = str(host_ip_obj[0])
-                _LOGGER.debug(f"{host} IP addresses:", host_ip)
+                _LOGGER.debug(f"{host} IP addresses: {host_ip}")
             else:
                 _LOGGER.error(f"Name {host} not resolved")
-        
         await socket.connect(host_ip, port, None)
+        
 
     def connect_socket(self):
         """subscribe to Sunology socket"""
@@ -195,15 +194,10 @@ class SunologyContext:
         socket.subscribe_on_diconnect(self.on_disconnect_callback)
 
         self._socket = socket
-        # asyncio.run_coroutine_threadsafe(
-        #     self._hass.async_create_task(socket.mock_messages_one_shot()), self._hass.loop
-        # )
 
-        self._socket_thread = threading.Thread(target=asyncio.run, args=(self._connect(socket, self.gateway_host, self.gateway_port, None),))
-        self._socket_thread.start()
-
-        # oneshot_event_thread = threading.Thread(target=asyncio.run, args=(socket.mock_messages_forever(),))
-        # oneshot_event_thread.start()
+        asyncio.run_coroutine_threadsafe(
+            self._async_connect(socket, self.gateway_host, self.gateway_port, None), self._hass.loop
+        )
 
 
 
@@ -265,7 +259,6 @@ class SunologyContext:
         return coordinator
     
     def remove_devices_from_coordinator(self, device: SunologyAbstractDevice):
- 
         for coordoned_device in self._sunology_devices_coordoned:
             if device['device'].unique_id == coordoned_device['device'].unique_id:
                 self._sunology_devices_coordoned.pop(coordoned_device)
@@ -274,15 +267,15 @@ class SunologyContext:
         """ here we return last device by id"""
         _LOGGER.debug("Call refresh devices")
         epoch_min = math.floor(time.time()/60)
-        if not self._socket.is_connected and not self._socket_thread.is_alive():
+        if not self.socket.is_connected:
             _LOGGER.info("Socket not connected detected, atempt: %s", self._connection_atempt)
-            self._socket_thread = threading.Thread(target=asyncio.run, args=(self._connect(self.socket, self.gateway_host, self.gateway_port, None),))
-            self._socket_thread.start()
+            asyncio.run_coroutine_threadsafe(
+                self._async_connect(self.socket, self.gateway_host, self.gateway_port, None), self._hass.loop
+            )
             self._connection_atempt+=1
 
         if epoch_min != self._previous_refresh:
             self._previous_refresh = epoch_min
-            ##await self.call_refresh_device() //All is async, not needed
             entities = []
             for device_coordoned in self._sunology_devices_coordoned:
                 device_entry = device_coordoned['device'].register(self.hass, self._entry)
@@ -479,8 +472,9 @@ class SunologyContext:
     def on_disconnect_callback(self):
         """on gridEvent callback"""
         _LOGGER.info("On disconnect received %s", self._connection_atempt)
-        self._socket_thread = threading.Thread(target=asyncio.run, args=(self._connect(self.socket, self.gateway_host, self.gateway_port, None),))
-        self._socket_thread.start()
+        asyncio.run_coroutine_threadsafe(
+            self._async_connect(self.socket, self.gateway_host, self.gateway_port, None), self._hass.loop
+        )
         self._connection_atempt+=1
 
 
