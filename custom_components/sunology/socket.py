@@ -56,29 +56,36 @@ class SunologySocket():
         """event: tells you when you are have lost connection of the socket."""
         self._on_disconnect_callback = callback_function
 
+    def _execute_callback_function_safe(self, function_name, function, data):
+        """ execute_function """
+        if function is not None:
+            _LOGGER.debug('Execute function %s with data %s', function_name, data)
+            try:
+                function(data)
+            except Exception as e:
+                _LOGGER.error('Error while executing function %s: %s', function, e)
+        else:
+            _LOGGER.debug('No function to execute for %s', function_name)
+
     def on_productInfo(self, data):
         """ on_productInfo """
         _LOGGER.debug('ProductInfo received: %s', data)
-        if self._on_productInfo_callback is not None:
-            self._on_productInfo_callback(data)
+        self._execute_callback_function_safe('on_productInfo', self._on_productInfo_callback, data)
     
     def on_solarEvent(self, data):
         """ on_solarEvente """
         _LOGGER.debug('SolarEvent received: %s', data)
-        if self._on_solarEvent_callback is not None:
-            self._on_solarEvent_callback(data)
+        self._execute_callback_function_safe('on_solarEvent', self._on_solarEvent_callback, data)
     
     def on_batteryEvent(self, data):
         """ on_batteryEvent """
         _LOGGER.debug('Battery event received: %s', data)
-        if self._on_batteryEvent_callback is not None:
-            self._on_batteryEvent_callback(data)
+        self._execute_callback_function_safe('on_batteryEvent', self._on_batteryEvent_callback, data)
     
     def on_gridEvent(self, data):
         """ on_gridEvent """
         _LOGGER.debug('Grid event received: %s', data)
-        if self._on_gridEvent_callback is not None:
-            self._on_gridEvent_callback(data)
+        self._execute_callback_function_safe('on_gridEvent', self._on_gridEvent_callback, data)
     
     def on_connect(self):
         """ event: connected """
@@ -114,13 +121,17 @@ class SunologySocket():
                         _LOGGER.warning('Unmanaged event received: %s', message['event'])
             else:
                 _LOGGER.warning('Invalid event received: %s', message)
-        except Exception as err :
+        except json.JSONDecodeError as err :
+            _LOGGER.warning(f"Non json event received: {message}, {err=}, {type(err)=}")
+        except UnicodeDecodeError as err :
             _LOGGER.warning(f"Non json event received: {message}, {err=}, {type(err)=}")
 
     async def connect(self, lan_host_ip, lan_port, auth_token, basepath="ws"):
         """ connect to the sunology socket"""
         _LOGGER.debug('Socket connection call %s', lan_host_ip)
-        if not self._connected:
+        if self._connected:
+            _LOGGER.warn('Socket already connected')
+        else:
             _LOGGER.debug('Socket not connected')
             if auth_token is not None:
                 _LOGGER.debug('Auth connection')
@@ -147,10 +158,6 @@ class SunologySocket():
                     except ConnectionClosed:
                         self._connected = False
                         self.on_disconnect()
-        else:
-            _LOGGER.warn('Socket already connected')
-
-        #sio.wait()
 
         
     def disconnect(self):
