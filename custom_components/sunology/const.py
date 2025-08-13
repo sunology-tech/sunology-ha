@@ -6,6 +6,8 @@ DOMAIN = "sunology"
 CONF_GATEWAY_HOST = "lan_gateway_host"
 CONF_GATEWAY_PORT = "lan_gateway_port"
 
+GATEWAY_DEFAULT_PORT = 20199
+
 MIN_UNTIL_REFRESH = 2
 
 PACKAGE_NAME = f"custom_components.{DOMAIN}"

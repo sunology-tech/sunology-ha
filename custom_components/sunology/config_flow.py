@@ -7,11 +7,11 @@ from homeassistant.components import zeroconf
 from  homeassistant.helpers.service_info import zeroconf
 from homeassistant.const import CONF_HOST, CONF_PORT
 import voluptuous as vol
-from .const import CONF_GATEWAY_HOST, CONF_GATEWAY_PORT, DOMAIN, PACKAGE_NAME
+from .const import CONF_GATEWAY_HOST, CONF_GATEWAY_PORT, DOMAIN, PACKAGE_NAME, GATEWAY_DEFAULT_PORT
+
 
 _LOGGER = logging.getLogger(PACKAGE_NAME)
 
-DEFAULT_PORT = 20199
 
 # @config_entries.HANDLERS.register(DOMAIN)
 class SunologyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
@@ -20,7 +20,7 @@ class SunologyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     def __init__(self):
         """Initialize the sunology config flow."""
         self.hostname = None
-        self.port = DEFAULT_PORT
+        self.port = GATEWAY_DEFAULT_PORT
     
     @property
     def schema(self):
