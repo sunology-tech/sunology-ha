@@ -128,12 +128,12 @@ class SunologySocket():
                     try:
                         self._socket = websocket
                         self._connected = True
-                        on_connect()
+                        self.on_connect()
                         async for message in self._socket:
                             self.process(message)
                     except ConnectionClosed:
                         self._connected = False
-                        on_disconnect()
+                        self.on_disconnect()
                         
             else:
                 _LOGGER.debug('Unauth connection')

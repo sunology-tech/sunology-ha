@@ -346,6 +346,7 @@ class SunologyBatteryTargetPowerSensorEntity(SensorEntity):
     def should_poll(self) -> bool:
         """No need to poll. Coordinator notifies entity of updates."""
         return False
+
 class SunologyBatteryDcVoltageSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
