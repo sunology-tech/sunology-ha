@@ -31,15 +31,16 @@ _LOGGER = logging.getLogger(PACKAGE_NAME)
 
 async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: disable=W0613
     """Set up Sunology device based off an entry."""
-    sunology_context = hass.data[SUNOLOGY_DOMAIN]["context"]
+    sunology_context = config_entry.runtime_data
     coordoned_devices = sunology_context.sunology_devices_coordoned
 
     entities = []
     for coordoned_device in coordoned_devices:
         device = coordoned_device['device']
         coordinator = coordoned_device['coordinator']
-        coordoned_device['device_entities'] = []
-        hass.data[SUNOLOGY_DOMAIN]["devices"][device.device_id] = coordinator
+        if not 'device_entities' in coordoned_device:coordoned_device['device_entities'] = []
+
+        #hass.data[SUNOLOGY_DOMAIN]["devices"][device.device_id] = coordinator
         if isinstance(device, SolarEventInterface):
             coordoned_device['device_entities'].append(SunologPvPowerSensorEntity(device, hass))
             coordoned_device['device_entities'].append(SunologMiPowerSensorEntity(device, hass))

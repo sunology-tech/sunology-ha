@@ -5,7 +5,6 @@ import asyncio
 import logging
 from typing import Any, Mapping
 from datetime import timedelta
-from homeassistant.components import zeroconf
 from zeroconf import AddressResolver, IPVersion, Zeroconf
 from zeroconf.asyncio import AsyncZeroconf
 import math
@@ -21,15 +20,18 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 import homeassistant.helpers.config_validation as cv
 import homeassistant.helpers.event as ha_event
-
+from homeassistant.exceptions import HomeAssistantError
 from homeassistant.setup import async_when_setup
+from homeassistant.const import Platform
+from homeassistant.components import zeroconf
+from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
 )
 
 import threading
-
+type SunologyConfigEntry = ConfigEntry[SunologyContext]
 
 from .socket import SunologySocket
 from .device import (
@@ -55,37 +57,32 @@ from .const import (
 
 _LOGGER = logging.getLogger(PACKAGE_NAME)
 
-CONFIG_SCHEMA = vol.Schema(
-    {
-        vol.Required(DOMAIN, default={}): {
-            vol.Optional(CONF_GATEWAY_HOST): vol.All(str, vol.Length(min=3)),
-            vol.Optional(CONF_GATEWAY_PORT): vol.All(int, vol.Range(min=1, max=65535))
-        }
-    },
-    extra=vol.ALLOW_EXTRA,
-)
+PLATFORMS = [Platform.SENSOR]
 
-async def async_setup(hass, config):
-    """Setup  Sunology component."""
-    hass.data[DOMAIN] = {"config": config[DOMAIN], "devices": {}, "unsub": None}
-    hass.async_create_task(
-        hass.config_entries.flow.async_init(
-            DOMAIN,
-            context={
-                "source": config_entries.SOURCE_IMPORT
-            },
-            data={}
-        )
-    )
+# async def async_setup(hass, config):
+#     """Setup  Sunology component."""
+#     _LOGGER.info("Setup Sunology component %s, %s", hass, config)
+#     if DOMAIN in config.keys():
+#         hass.data[DOMAIN] = {"config": config[DOMAIN], "devices": {}, "unsub": None}
+#         hass.async_create_task(
+#             hass.config_entries.flow.async_init(
+#                 DOMAIN,
+#                 context={
+#                     "source": config_entries.SOURCE_IMPORT
+#                 },
+#                 data={}
+#             )
+#         )
+#     else:
+#         hass.data[DOMAIN] = {"config": {}, "devices": {}, "unsub": None}
 
-    # Return boolean to indicate that initialization was successful.
-    return True
+#     # Return boolean to indicate that initialization was successful.
+#     return True
 
-async def async_setup_entry(hass, entry):
+async def async_setup_entry(hass, entry: SunologyConfigEntry):
     """Set up Sunology entry."""
-    config = hass.data[DOMAIN]["config"]
-    gateway_host = config.get(CONF_GATEWAY_HOST) or entry.data[CONF_GATEWAY_HOST] if CONF_GATEWAY_HOST in entry.data.keys() else None
-    gateway_port = config.get(CONF_GATEWAY_PORT) or entry.data[CONF_GATEWAY_PORT] if CONF_GATEWAY_PORT in entry.data.keys() else None
+    gateway_host = entry.data[CONF_GATEWAY_HOST] if CONF_GATEWAY_HOST in entry.data.keys() else None
+    gateway_port = entry.data[CONF_GATEWAY_PORT] if CONF_GATEWAY_PORT in entry.data.keys() else None
     context = SunologyContext(
         hass,
         entry,
@@ -95,25 +92,24 @@ async def async_setup_entry(hass, entry):
 
     _LOGGER.info("Context-setup and start the thread")
     _LOGGER.info("Thread started")
-
-    hass.data[DOMAIN]["context"] = context
+    entry.runtime_data = context
 
     # We add device to the context
     await context.init_context(hass)
 
-    await hass.config_entries.async_forward_entry_setups(entry, ["sensor"])
+    await hass.config_entries.async_forward_entry_setups(entry,PLATFORMS)
     return True
 
 
-async def async_unload_entry(hass, entry):
+async def async_unload_entry(hass, entry: SunologyConfigEntry):
     """Unload an Sunology config entry."""
+    unload_ok = True
+    # unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    
+    context =  entry.runtime_data
+    await context.socket.disconnect() # Disconnect only if all devices is disabled
 
-    await hass.config_entries.async_forward_entry_unload(entry, "sensor")
-
-    context = hass.data[DOMAIN]["context"]
-    context.socket.disconnect() # Disconnect only if all devices is disabled
-
-    return True
+    return unload_ok
 
 async def async_remove_config_entry_device(hass, config_entry, device_entry) -> bool:
     """Remove an Sunology device entry."""
@@ -273,17 +269,21 @@ class SunologyContext:
             self._connection_atempt+=1
 
         if epoch_min != self._previous_refresh:
-            self._previous_refresh = epoch_min
-            entities = []
-            for device_coordoned in self._sunology_devices_coordoned:
-                device_entry = device_coordoned['device'].register(self.hass, self._entry)
-                device_coordoned['device'].device_entry_id =  device_entry.id
+            self._reload_platforms(epoch_min)
 
-            for entity in entities:
-                entity.register(self.hass, self._entry)
+    async def _reload_platforms(self, epoch_min = math.floor(time.time()/60)):
+        """ reload platforms """
+        self._previous_refresh =  epoch_min
+        entities = []
+        for device_coordoned in self._sunology_devices_coordoned:
+            device_entry = device_coordoned['device'].register(self.hass, self._entry)
+            device_coordoned['device'].device_entry_id =  device_entry.id
 
-            await self.hass.config_entries.async_forward_entry_unload(self._entry, "sensor")
-            await self.hass.config_entries.async_forward_entry_setups(self._entry, ["sensor"])#, self._hass.loop
+        for entity in entities:
+            entity.register(self.hass, self._entry)
+
+        await self.hass.config_entries.async_unload_platforms(self._entry, PLATFORMS)
+        await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)#, self._hass.loop
 
     @property
     def sunology_devices_coordoned(self):
@@ -352,16 +352,18 @@ class SunologyContext:
                             self.on_productInfo_callback(hub_device)
                 case "STOREY":
                     master = StoreyMaster(product_data)
-
-                    master.capacity = product_data['battery']['capacity']
-                    master.maxInput = product_data['battery']['maxCons']
-                    master.maxOutput = product_data['battery']['maxProd']
-                    for pack in product_data['packs']:
-                        # if pack['packIndex'] == 1:
-                        #     master.capacity = pack['capacity']
-                        #     master.maxInput = pack['maxCons']
-                        #     master.maxOutput = pack['maxProd']
-                        # else:
+                    if 'battery' not in product_data.keys():
+                        _LOGGER.error("No battery data found for Storey %s", product_data['id'])
+                        raise HomeAssistantError(f"No battery data found for Storey {product_data['id']}")
+                    else:
+                        master.capacity = product_data['battery']['capacity']
+                        master.maxInput = product_data['battery']['maxCons']
+                        master.maxOutput = product_data['battery']['maxProd']
+                    if 'packs' not in product_data.keys():
+                        _LOGGER.error("No packs data found for Storey %s", product_data['id'])
+                        raise HomeAssistantError(f"No packs data found for Storey {product_data['id']}")
+                    else:
+                        for pack in product_data['packs']:
                             st_pack = StoreyPack(product_data, pack['packIndex'])
                             st_pack.capacity = pack['capacity']
                             st_pack.maxInput = pack['maxCons']
@@ -378,6 +380,9 @@ class SunologyContext:
                     devices.append(SunologyAbstractDevice(product_data))
             self._sunology_devices.extend(devices)
             coordinator = self.add_devices_to_coordinator(devices)
+            asyncio.run_coroutine_threadsafe(
+                self._reload_platforms(), self._hass.loop
+            )
 
 
     @callback
@@ -419,19 +424,21 @@ class SunologyContext:
                     device.status = data['status']
                     device.acVoltage = data['acVoltage']
                     device.battery_event_update(data['battery'])
-                    
-                    for entity in coordoned_device['device_entities']:
-                        _LOGGER.debug('Update entity %s', entity.entity_id)
-                        entity.schedule_update_ha_state(force_refresh=False)
+                    if 'device_entities' in coordoned_device.keys():
+                        for entity in coordoned_device['device_entities']:
+                            _LOGGER.debug('Update entity %s', entity.entity_id)
+                            entity.schedule_update_ha_state(force_refresh=False)
 
                     for pack in data['packs']:
                             for sub_coordoned_device in self._sunology_devices_coordoned:
                                 sub_device = sub_coordoned_device['device']
                                 if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":
                                     sub_device.battery_event_update(pack)
-                                    for entity in sub_coordoned_device['device_entities']:
-                                        _LOGGER.debug('Update entity %s', entity.entity_id)
-                                        entity.schedule_update_ha_state(force_refresh=False)
+                                    if 'device_entities' in sub_coordoned_device.keys():
+
+                                        for entity in sub_coordoned_device['device_entities']:
+                                            _LOGGER.debug('Update entity %s', entity.entity_id)
+                                            entity.schedule_update_ha_state(force_refresh=False)
                                     break
                 else:
                     _LOGGER.info("Solar event receive on non storey master device")

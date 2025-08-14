@@ -4,19 +4,15 @@ import logging
 import asyncio
 from websockets.asyncio.client import connect
 from websockets.exceptions import ConnectionClosed
+from homeassistant.exceptions import HomeAssistantError
 
 import time
 import random
 import json
 from .const import PACKAGE_NAME
 
+
 _LOGGER = logging.getLogger(PACKAGE_NAME)
-
-
-
-
-
-
 class SunologySocket():
     """docstring for SunologySocket"""
     def __init__(self):
@@ -59,11 +55,13 @@ class SunologySocket():
     def _execute_callback_function_safe(self, function_name, function, data):
         """ execute_function """
         if function is not None:
-            _LOGGER.debug('Execute function %s with data %s', function_name, data)
+            _LOGGER.debug('Execute function %s with data %s', function_name, json.dumps(data))
             try:
                 function(data)
+            except HomeAssistantError:
+                pass
             except Exception as e:
-                _LOGGER.error('Error while executing function %s: %s', function, e)
+                _LOGGER.exception('Error while executing function %s:', function_name)
         else:
             _LOGGER.debug('No function to execute for %s', function_name)
 
@@ -160,6 +158,9 @@ class SunologySocket():
                         self.on_disconnect()
 
         
-    def disconnect(self):
+    async def disconnect(self):
         """disconnect from the sunology socket"""
-        #sio.disconnect()
+        if self._socket is not None:
+            await self._socket.close()
+        self._connected = False
+        self.on_disconnect()
