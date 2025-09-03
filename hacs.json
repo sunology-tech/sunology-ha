@@ -1,5 +1,7 @@
 {
-  "name": "Sunology integration",
-  "country": ["FR", "ES", "DE"],
-  "homeassistant": "2024.10.0"
+  "name": "Sunology",
+  "content_in_root": false,
+  "homeassistant": "2024.10.0",
+  "zip_release": false,
+  "country": ["FR", "ES", "DE"]
 }
