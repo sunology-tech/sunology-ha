@@ -6,7 +6,7 @@
     "dependencies": ["zeroconf"],
     "documentation": "https://github.com/sunology-tech/sunology-ha",
     "integration_type": "hub",
-    "iot_class": "local_polling",
+    "iot_class": "local_push",
     "issue_tracker": "https://github.com/sunology-tech/sunology-ha/issues",
     "loggers": ["sunology"],
     "requirements": ["websockets>=14.1", "asyncio>=3.4.3"],
