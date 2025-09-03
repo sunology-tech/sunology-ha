@@ -22,7 +22,7 @@
       "already_configured": "Das Gerät ist bereits konfiguriert."
     },
     "create_entry": {
-      "default": "\n\rPairing erfolgreich"
+      "default": "Pairing erfolgreich"
     }
   }
 }

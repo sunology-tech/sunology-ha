@@ -22,7 +22,7 @@
       "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
     },
     "create_entry": {
-      "default": "\n\nEmparejamiento exitoso"
+      "default": "Emparejamiento exitoso"
     }
   }
 }
