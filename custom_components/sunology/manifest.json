@@ -9,7 +9,7 @@
     "documentation": "https://github.com/sunology-tech/sunology-ha",
     "issue_tracker": "https://github.com/sunology-tech/sunology-ha/issues",
     "integration_type": "hub",
-    "version": "0.1.8.1",
+    "version": "1.0.0",
     "loggers": ["sunology"],
     "zeroconf": ["_solarhome._tcp.local."]
 }
