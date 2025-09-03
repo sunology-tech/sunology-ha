@@ -15,4 +15,4 @@ jobs:
         uses: "hacs/action@main"
         with:
           category: "integration"
-          ignore: brands integration_manifest hacsjson
+          #ignore: brands integration_manifest hacsjson
