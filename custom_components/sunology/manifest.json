@@ -5,12 +5,11 @@
     "iot_class": "local_polling",
     "requirements": ["websockets>=14.1", "asyncio>=3.4.3"],
     "dependencies": ["zeroconf"],
-    "codeowners": ["sunology-tech"],
+    "codeowners": ["@sunology-tech"],
     "documentation": "https://github.com/sunology-tech/sunology-ha",
     "issue_tracker": "https://github.com/sunology-tech/sunology-ha/issues",
     "integration_type": "hub",
-    "version": "0.1.6",
-    "zeroconf": [{
-        "name": "Sunology-HB-*", "type": "_solarhome._tcp.local."
-    }]
+    "version": "0.1.8.1",
+    "loggers": ["sunology"],
+    "zeroconf": ["_solarhome._tcp.local."]
 }

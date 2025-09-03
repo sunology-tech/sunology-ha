@@ -1,25 +1,28 @@
 {
-    "config": {
-      "title": "Sunology",
-      "step": {
-        "sunology_setup": {
-          "title": "Set up Sunology STREAM Connect",
-          "description": "Setup the gateway",
-          "data": {
-            "lan_gateway_host": "Host ip or host",
-            "lan_gateway_port": "Host port"
-          }
+  "config": {
+    "title": "Sunology",
+    "step": {
+      "user": {
+        "title": "Set up Sunology",
+        "description": "Setup your STREAM Connect",
+        "data": {
+          "lan_gateway_host": "Host ip or host",
+          "lan_gateway_port": "Host port"
         }
-      },
-      "error": {
-        "faulty_credentials": "Authorization failed",
-        "unknown": "Unknown error"
-      },
-      "abort": {
-        "one_instance_allowed": "Only one instance is allowed."
-      },
-      "create_entry": {
-        "default": "\n\nPairing success"
       }
+    },
+    "error": {
+      "faulty_credentials": "Authorization failed",
+      "unknown": "Unknown error"
+    },
+    "abort": {
+      "one_instance_allowed": "Only one instance is allowed.",
+      "not_sunology_device": "It does not seem to be a Sunology device.",
+      "not_ipv4_address": "It does not seem to be a valid ipv4 address.",
+      "already_configured": "[%key:common::config_flow::abort::already_configured_device%]"
+    },
+    "create_entry": {
+      "default": "\n\nPairing success"
     }
   }
+}

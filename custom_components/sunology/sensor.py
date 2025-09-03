@@ -31,15 +31,16 @@ _LOGGER = logging.getLogger(PACKAGE_NAME)
 
 async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: disable=W0613
     """Set up Sunology device based off an entry."""
-    sunology_context = hass.data[SUNOLOGY_DOMAIN]["context"]
+    sunology_context = config_entry.runtime_data
     coordoned_devices = sunology_context.sunology_devices_coordoned
 
     entities = []
     for coordoned_device in coordoned_devices:
         device = coordoned_device['device']
         coordinator = coordoned_device['coordinator']
-        coordoned_device['device_entities'] = []
-        hass.data[SUNOLOGY_DOMAIN]["devices"][device.device_id] = coordinator
+        if not 'device_entities' in coordoned_device:coordoned_device['device_entities'] = []
+
+        #hass.data[SUNOLOGY_DOMAIN]["devices"][device.device_id] = coordinator
         if isinstance(device, SolarEventInterface):
             coordoned_device['device_entities'].append(SunologPvPowerSensorEntity(device, hass))
             coordoned_device['device_entities'].append(SunologMiPowerSensorEntity(device, hass))
@@ -346,6 +347,7 @@ class SunologyBatteryTargetPowerSensorEntity(SensorEntity):
     def should_poll(self) -> bool:
         """No need to poll. Coordinator notifies entity of updates."""
         return False
+
 class SunologyBatteryDcVoltageSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
@@ -594,7 +596,7 @@ class SunologyBatteryEnergyProducedSensorEntity(SensorEntity):
         return False
 
 
-class SunologyBatteryEnergyConsumedSensorEntity(SensorEntity):
+class SunologyBatteryEnergyConsumedSensorEntity( SensorEntity):
     """Represent a mipower of a  device."""
 
     def __init__(self, device:SunologyAbstractDevice, hass):
@@ -1514,6 +1516,7 @@ class SunologyContractSensorEntity(SensorEntity):
 
     def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyTotalImportSensorEntity entity."""
+        
         self._device = device
         self._name = device.name
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"contract")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
@@ -1556,6 +1559,7 @@ class SunologyCurrentTarifSensorEntity(SensorEntity):
 
     def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyTotalImportSensorEntity entity."""
+        
         self._device = device
         self._name = device.name
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"current_tarif")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301

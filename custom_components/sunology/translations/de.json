@@ -1,0 +1,28 @@
+{
+  "config": {
+    "title": "Sunology",
+    "step": {
+      "user": {
+        "title": "Konfigurieren Sie Sunology",
+        "description": "Konfigurieren Sie Ihren STREAM Connect",
+        "data": {
+          "lan_gateway_host": "IP-Adresse oder lokale Adresse",
+          "lan_gateway_port": "Netzwerkport"
+        }
+      }
+    },
+    "error": {
+      "faulty_credentials": "Authentifizierungsfehler",
+      "unknown": "Unbekannter Fehler"
+    },
+    "abort": {
+      "one_instance_allowed": "Nur eine Instanz ist erlaubt.",
+      "not_sunology_device": "Das scheint kein Sunology-Gerät zu sein.",
+      "not_ipv4_address": "Das scheint keine IPv4-Adresse zu sein.",
+      "already_configured": "Das Gerät ist bereits konfiguriert."
+    },
+    "create_entry": {
+      "default": "\n\rPairing erfolgreich"
+    }
+  }
+}
