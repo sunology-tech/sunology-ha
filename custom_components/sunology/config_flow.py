@@ -35,20 +35,13 @@ class SunologyConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
         errors: dict[str, str] = {}
         if user_input is not None :
             _LOGGER.info("user_input: %s", user_input)
-            # if CONF_GATEWAY_HOST in user_input and CONF_GATEWAY_PORT in user_input:
             gateway_host = user_input[CONF_GATEWAY_HOST]
             gateway_port = user_input[CONF_GATEWAY_PORT]
-            # try:
             data = {
                 CONF_GATEWAY_HOST: gateway_host,
                 CONF_GATEWAY_PORT: gateway_port,
             }
             return self.async_create_entry(title=gateway_host, data=data)
-            # return False
-            # except: 
-                # _LOGGER.error("Unknown error")
-                # errors["base"] = "unkonwn"
-                # return self.async_show_form(step_id="user", data_schema=self.schema, errors=errors)
         return self.async_show_form(step_id='user', data_schema=self.schema, errors=errors)
 
         
