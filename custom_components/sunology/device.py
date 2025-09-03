@@ -102,11 +102,11 @@ class SunologyAbstractDevice():
         )
         return dev_info
 
-    def register(self, hass, entry) -> DeviceEntry :
+    async def register(self, hass, entry) -> DeviceEntry :
         from homeassistant.helpers import device_registry as dr
         device_registry = dr.async_get(hass)
 
-        return device_registry.async_get_or_create(
+        return await device_registry.async_get_or_create(
             config_entry_id=entry.entry_id,
             **self.device_info
         )

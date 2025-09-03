@@ -24,7 +24,7 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.setup import async_when_setup
 from homeassistant.const import Platform
 from homeassistant.components import zeroconf
-from homeassistant.config_entries import ConfigEntry
+from homeassistant.config_entries import ConfigEntry, ConfigEntryState
 from homeassistant.helpers.update_coordinator import (
     CoordinatorEntity,
     DataUpdateCoordinator,
@@ -59,25 +59,6 @@ _LOGGER = logging.getLogger(PACKAGE_NAME)
 
 PLATFORMS = [Platform.SENSOR]
 
-# async def async_setup(hass, config):
-#     """Setup  Sunology component."""
-#     _LOGGER.info("Setup Sunology component %s, %s", hass, config)
-#     if DOMAIN in config.keys():
-#         hass.data[DOMAIN] = {"config": config[DOMAIN], "devices": {}, "unsub": None}
-#         hass.async_create_task(
-#             hass.config_entries.flow.async_init(
-#                 DOMAIN,
-#                 context={
-#                     "source": config_entries.SOURCE_IMPORT
-#                 },
-#                 data={}
-#             )
-#         )
-#     else:
-#         hass.data[DOMAIN] = {"config": {}, "devices": {}, "unsub": None}
-
-#     # Return boolean to indicate that initialization was successful.
-#     return True
 
 async def async_setup_entry(hass, entry: SunologyConfigEntry):
     """Set up Sunology entry."""
@@ -111,9 +92,15 @@ async def async_unload_entry(hass, entry: SunologyConfigEntry):
 
     return unload_ok
 
-async def async_remove_config_entry_device(hass, config_entry, device_entry) -> bool:
-    """Remove an Sunology device entry."""
-    return True
+
+async def async_remove_config_entry_device(hass, config_entry: SunologyConfigEntry, device_entry) -> bool:
+    """Remove a config entry from a device."""
+    return not any(
+        identifier
+        for identifier in device_entry.identifiers
+        if identifier[0] == DOMAIN
+        and identifier[1] in [sunology_device.device_id for sunology_device in config_entry.runtime.sunology_devices]
+    )
 
 
 
@@ -269,21 +256,20 @@ class SunologyContext:
             self._connection_atempt+=1
 
         if epoch_min != self._previous_refresh:
-            self._reload_platforms(epoch_min)
+            self._reload_platforms(False, epoch_min)
 
-    async def _reload_platforms(self, epoch_min = math.floor(time.time()/60)):
+    async def _reload_platforms(self, new_devices=False, epoch_min = math.floor(time.time()/60)):
         """ reload platforms """
         self._previous_refresh =  epoch_min
-        entities = []
         for device_coordoned in self._sunology_devices_coordoned:
-            device_entry = device_coordoned['device'].register(self.hass, self._entry)
+            device_entry = await device_coordoned['device'].register(self.hass, self._entry)
             device_coordoned['device'].device_entry_id =  device_entry.id
 
-        for entity in entities:
-            entity.register(self.hass, self._entry)
-
-        await self.hass.config_entries.async_unload_platforms(self._entry, PLATFORMS)
-        await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)#, self._hass.loop
+        if self._entry.state == ConfigEntryState.LOADED and new_devices:
+            await self.hass.config_entries.async_unload_platforms(self._entry, PLATFORMS)
+            await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)
+        # else:
+        #     await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)
 
     @property
     def sunology_devices_coordoned(self):
@@ -380,9 +366,10 @@ class SunologyContext:
                     devices.append(SunologyAbstractDevice(product_data))
             self._sunology_devices.extend(devices)
             coordinator = self.add_devices_to_coordinator(devices)
-            asyncio.run_coroutine_threadsafe(
-                self._reload_platforms(), self._hass.loop
-            )
+            if len(devices) > 0:
+                asyncio.run_coroutine_threadsafe(
+                    self._reload_platforms(new_devices=True), self._hass.loop
+                )
 
 
     @callback
