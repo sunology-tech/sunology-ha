@@ -27,13 +27,6 @@ You need to have an Home assistant and a Sunology STREAM Connect
 
 
 ## Installation
-### Option 1
+### Flow
 - Just folow the integration config steps.
 
-### Option 2
-- Add the folowing line in your configuration.yml
-```yaml
-    sunology:
-        lan_gateway_host: <gateway_host_address> # Default sunology-ehub.local
-        lan_gateway_port: <gateway_port> # Default 20199
-```

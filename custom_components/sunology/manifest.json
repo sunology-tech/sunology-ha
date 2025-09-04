@@ -1,15 +1,15 @@
 {
     "domain": "sunology",
     "name": "Sunology",
-    "config_flow": true,
-    "iot_class": "local_polling",
-    "requirements": ["websockets>=14.1", "asyncio>=3.4.3"],
-    "dependencies": ["zeroconf"],
     "codeowners": ["@sunology-tech"],
+    "config_flow": true,
+    "dependencies": ["zeroconf"],
     "documentation": "https://github.com/sunology-tech/sunology-ha",
-    "issue_tracker": "https://github.com/sunology-tech/sunology-ha/issues",
     "integration_type": "hub",
-    "version": "1.0.0",
+    "iot_class": "local_push",
+    "issue_tracker": "https://github.com/sunology-tech/sunology-ha/issues",
     "loggers": ["sunology"],
+    "requirements": ["websockets>=14.1", "asyncio>=3.4.3"],
+    "version": "1.0.0",
     "zeroconf": ["_solarhome._tcp.local."]
 }

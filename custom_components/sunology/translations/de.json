@@ -1,6 +1,5 @@
 {
   "config": {
-    "title": "Sunology",
     "step": {
       "user": {
         "title": "Konfigurieren Sie Sunology",
@@ -22,7 +21,7 @@
       "already_configured": "Das Gerät ist bereits konfiguriert."
     },
     "create_entry": {
-      "default": "\n\rPairing erfolgreich"
+      "default": "Pairing erfolgreich"
     }
   }
 }
