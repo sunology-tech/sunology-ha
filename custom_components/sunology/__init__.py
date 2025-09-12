@@ -340,14 +340,14 @@ class SunologyContext:
                     master = StoreyMaster(product_data)
                     if 'battery' not in product_data.keys():
                         _LOGGER.error("No battery data found for Storey %s", product_data['id'])
-                        raise HomeAssistantError(f"No battery data found for Storey {product_data['id']}")
+                        #raise HomeAssistantError(f"No battery data found for Storey {product_data['id']}")
                     else:
                         master.capacity = product_data['battery']['capacity']
                         master.maxInput = product_data['battery']['maxCons']
                         master.maxOutput = product_data['battery']['maxProd']
                     if 'packs' not in product_data.keys():
                         _LOGGER.error("No packs data found for Storey %s", product_data['id'])
-                        raise HomeAssistantError(f"No packs data found for Storey {product_data['id']}")
+                        #raise HomeAssistantError(f"No packs data found for Storey {product_data['id']}")
                     else:
                         for pack in product_data['packs']:
                             st_pack = StoreyPack(product_data, pack['packIndex'])
@@ -442,9 +442,10 @@ class SunologyContext:
             if device.device_id == data['id']:
                 if isinstance(device, (SmartMeter_3P, LinkyTransmitter)):
                     device.update_gridevent(data)
-                    for entity in coordoned_device['device_entities']:
-                        _LOGGER.debug('Update entity %s', entity.entity_id)
-                        entity.schedule_update_ha_state(force_refresh=False)
+                    if 'device_entities' in coordoned_device.keys():
+                        for entity in coordoned_device['device_entities']:
+                            _LOGGER.debug('Update entity %s', entity.entity_id)
+                            entity.schedule_update_ha_state(force_refresh=False)
                 else:
                     _LOGGER.info("Grid event receive on non grid meter device")
                 event_data = {
