@@ -124,7 +124,7 @@ class SunologySocket():
         except UnicodeDecodeError as err :
             _LOGGER.warning(f"Non json event received: {message}, {err=}, {type(err)=}")
 
-    async def connect(self, lan_host_ip, lan_port, auth_token, basepath="ws"):
+    async def connect(self, lan_host_ip, lan_port, auth_token, basepath="ws", end_timeout=5):
         """ connect to the sunology socket"""
         _LOGGER.debug('Socket connection call %s', lan_host_ip)
         if self._connected:
@@ -141,6 +141,7 @@ class SunologySocket():
                         async for message in self._socket:
                             self.process(message)
                     except ConnectionClosed:
+                        await asyncio.sleep(end_timeout)
                         self._connected = False
                         self.on_disconnect()
                         
@@ -154,6 +155,7 @@ class SunologySocket():
                         async for message in self._socket:
                             self.process(message)
                     except ConnectionClosed:
+                        await asyncio.sleep(end_timeout)
                         self._connected = False
                         self.on_disconnect()
 
