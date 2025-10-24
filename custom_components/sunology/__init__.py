@@ -89,7 +89,7 @@ async def async_unload_entry(hass, entry: SunologyConfigEntry):
     
     context =  entry.runtime_data
     await context.socket.disconnect() # Disconnect only if all devices is disabled
-
+    context.unload()
     return unload_ok
 
 
@@ -121,6 +121,8 @@ class SunologyContext:
         self._socket_thread = None
         self._connection_atempt = 0
         self._previous_refresh = math.floor(time.time()/60)
+        self._coroutines_future = []
+
     @property
     def hass(self):
         """ hass """
@@ -145,6 +147,13 @@ class SunologyContext:
     def sunology_devices(self, devices):
         """ Sunology devices list """
         self._sunology_devices = devices
+    
+    def unload(self):
+        """ hass """
+        for future in self._coroutines_future:
+            future.cancel()
+        self._coroutines_future = []
+
 
     async def _async_connect(self, socket, host, port, token):
         """connect to Sunology socket"""
@@ -178,9 +187,9 @@ class SunologyContext:
 
         self._socket = socket
 
-        asyncio.run_coroutine_threadsafe(
+        self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
             self._async_connect(socket, self.gateway_host, self.gateway_port, None), self._hass.loop
-        )
+        ))
 
     async def get_device(self, device_id):
         """ here we return last device by id"""
@@ -223,6 +232,7 @@ class SunologyContext:
         
     
     def add_device_to_coordinator(self, device: SunologyAbstractDevice):
+        _LOGGER.debug("Device added to coordinator %s, %s", device.model_name, device.device_id)
         update_interval = timedelta(minutes=MIN_UNTIL_REFRESH)
         coordinator = DataUpdateCoordinator[Mapping[str, Any]](
             self._hass,
@@ -250,9 +260,9 @@ class SunologyContext:
         epoch_min = math.floor(time.time()/60)
         if not self.socket.is_connected:
             _LOGGER.info("Socket not connected detected, atempt: %s", self._connection_atempt)
-            asyncio.run_coroutine_threadsafe(
+            self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
                 self._async_connect(self.socket, self.gateway_host, self.gateway_port, None), self._hass.loop
-            )
+            ))
             self._connection_atempt+=1
 
         if epoch_min != self._previous_refresh:
@@ -463,9 +473,9 @@ class SunologyContext:
     def on_disconnect_callback(self):
         """on gridEvent callback"""
         _LOGGER.info("On disconnect received %s", self._connection_atempt)
-        asyncio.run_coroutine_threadsafe(
+        self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
             self._async_connect(self.socket, self.gateway_host, self.gateway_port, None), self._hass.loop
-        )
+        ))
         self._connection_atempt+=1
 
 
