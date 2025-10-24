@@ -266,16 +266,25 @@ class SunologyContext:
             self._connection_atempt+=1
 
         if epoch_min != self._previous_refresh:
-            self._reload_platforms(False, epoch_min)
-
-    async def _reload_platforms(self, new_devices=False, epoch_min = math.floor(time.time()/60)):
+            self._previous_refresh =  epoch_min
+            for device_coordoned in self._sunology_devices_coordoned:
+                if device_coordoned['device'].device_entry_id is None:
+                    device_entry = await device_coordoned['device'].register(self.hass, self._entry) # Look to be the source of my issue
+                    device_coordoned['device'].device_entry_id =  device_entry.id
+    
+    async def _register_new_devices(self, new_devices):
         """ reload platforms """
-        self._previous_refresh =  epoch_min
         for device_coordoned in self._sunology_devices_coordoned:
-            device_entry = await device_coordoned['device'].register(self.hass, self._entry)
-            device_coordoned['device'].device_entry_id =  device_entry.id
-
-        if self._entry.state == ConfigEntryState.LOADED and new_devices:
+            for device in new_devices:
+                if device['device'].unique_id == device_coordoned['device'].unique_id:
+                    if device_coordoned['device'].device_entry_id is None:
+                        device_entry = await device_coordoned['device'].register(self.hass, self._entry) # Look to be the source of my issue
+                        device_coordoned['device'].device_entry_id = device_entry.id
+        await self._reload_platforms()
+    
+    async def _reload_platforms(self, epoch_min = math.floor(time.time()/60)):
+        self._previous_refresh =  epoch_min
+        if self._entry.state == ConfigEntryState.LOADED:
             await self.hass.config_entries.async_unload_platforms(self._entry, PLATFORMS)
             await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)
         # else:
@@ -297,11 +306,9 @@ class SunologyContext:
         """set the Sunology socket"""
         self._socket = socket
 
-    
-    @callback
-    def on_productInfo_callback(self, product_data):
-        """on device callback"""
-        _LOGGER.info("On device received '%s'", product_data['productName'])
+
+    def process_new_device(self, product_data, sub_loop=False):
+        new_devices = []
         found = False
         for coordoned_device in self._sunology_devices_coordoned:
             if 'device' not in coordoned_device.keys():
@@ -309,7 +316,10 @@ class SunologyContext:
                 if device.device_id == product_data['id']:
                     device.update_product(product_data)
                     found = True
-                    if product_data['productName'] == "STOREY":
+                    if product_data['productName'] == "STREAM_CONNECT" and "devices" in product_data.keys():
+                        for sub_device in product_data['devices']:
+                            new_devices.extend(self.process_new_device(sub_device, True))
+                    elif product_data['productName'] == "STOREY":
                         new_packs = []
                         for sub_device in self._sunology_devices:
                             if isinstance(sub_device, StoreyPack) and sub_device.device_id.split("#")[0] == device.device_id:
@@ -332,31 +342,33 @@ class SunologyContext:
                                 st_pack.maxOutput = pack['maxProd']
                                 new_packs.append(st_pack)
                         self._sunology_devices.extend(new_packs)
-                        coordinator = self.add_devices_to_coordinator(new_packs)
+                        self.add_devices_to_coordinator(new_packs)
                     break
         if not found:
-            devices = []
             match product_data['productName']:
                 case "PLAY_MAX":
-                    devices.append(PLAYMax(product_data))
+                    new_devices.append(PLAYMax(product_data))
                 case "PLAY":
-                    devices.append(PLAY(product_data))
+                    new_devices.append(PLAY(product_data))
                 case "STREAM_CONNECT":
-                    devices.append(Gateway(product_data))
+                    new_devices.append(Gateway(product_data))
                     if "devices" in product_data.keys():
                         for hub_device in product_data['devices']:
-                            self.on_productInfo_callback(hub_device)
+                            new_devices.extend(self.process_new_device(hub_device, True))
                 case "STOREY":
                     master = StoreyMaster(product_data)
+                    products_valid=True
                     if 'battery' not in product_data.keys():
-                        _LOGGER.error("No battery data found for Storey %s", product_data['id'])
+                        _LOGGER.warning("No battery data found for Storey %s", product_data['id'])
                         #raise HomeAssistantError(f"No battery data found for Storey {product_data['id']}")
+                        products_valid=False
                     else:
                         master.capacity = product_data['battery']['capacity']
                         master.maxInput = product_data['battery']['maxCons']
                         master.maxOutput = product_data['battery']['maxProd']
                     if 'packs' not in product_data.keys():
-                        _LOGGER.error("No packs data found for Storey %s", product_data['id'])
+                        _LOGGER.warning("No packs data found for Storey %s", product_data['id'])
+                        products_valid=False
                         #raise HomeAssistantError(f"No packs data found for Storey {product_data['id']}")
                     else:
                         for pack in product_data['packs']:
@@ -364,22 +376,31 @@ class SunologyContext:
                             st_pack.capacity = pack['capacity']
                             st_pack.maxInput = pack['maxCons']
                             st_pack.maxOutput = pack['maxProd']
-                            devices.append(st_pack)
-                    devices.append(master)
+                            new_devices.append(st_pack)
+                    if products_valid:
+                        new_devices.append(master)
                 case "STREAM_METER":
-                    devices.append(SmartMeter_3P(product_data))
+                    new_devices.append(SmartMeter_3P(product_data))
                 case "ERL_GEN2":
-                    devices.append(LinkyTransmitter(product_data))
-                    
+                    new_devices.append(LinkyTransmitter(product_data))
                 case _:
                     _LOGGER.warning("Unmanaged device receive on device_event")
-                    devices.append(SunologyAbstractDevice(product_data))
-            self._sunology_devices.extend(devices)
-            coordinator = self.add_devices_to_coordinator(devices)
-            if len(devices) > 0:
-                asyncio.run_coroutine_threadsafe(
-                    self._reload_platforms(new_devices=True), self._hass.loop
-                )
+                    new_devices.append(SunologyAbstractDevice(product_data))
+        return new_devices
+    
+    @callback
+    def on_productInfo_callback(self, product_data):
+        """on device callback"""
+        _LOGGER.info("On device received '%s'", product_data['productName'])
+        new_devices = self.process_new_device(product_data)
+        for device in new_devices:
+            _LOGGER.info("New devices found %s", device)
+            self._sunology_devices.append(device)
+            self.add_device_to_coordinator(device)
+        if len(new_devices) > 0:
+            asyncio.run_coroutine_threadsafe(
+                self._register_new_devices(new_devices), self._hass.loop
+            )
 
 
     @callback
