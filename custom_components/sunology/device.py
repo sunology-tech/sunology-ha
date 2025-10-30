@@ -581,8 +581,8 @@ class LinkyTransmitter(SunologyAbstractDevice):
         return self._indexes_erl
 
     def update_gridevent(self, raw_grid_event):
-        if "apparentPower" in raw_grid_event.keys():
-            self._app_power_usage = raw_grid_event['apparentPower']
+        if "appPowerUsage" in raw_grid_event.keys():
+            self._app_power_usage = raw_grid_event['appPowerUsage']
         if "appPowerProd" in raw_grid_event.keys():
             self._app_power_prod = raw_grid_event['appPowerProd']
         if "indexesErl" in raw_grid_event.keys():
