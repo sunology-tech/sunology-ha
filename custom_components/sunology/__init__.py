@@ -269,26 +269,25 @@ class SunologyContext:
             self._previous_refresh =  epoch_min
             for device_coordinated in self._sunology_devices_coordinated:
                 if device_coordinated['device'].device_entry_id is None:
-                    device_entry = await device_coordinated['device'].register(self.hass, self._entry) # Look to be the source of my issue
+                    device_entry = await device_coordinated['device'].register(self.hass, self._entry)
                     device_coordinated['device'].device_entry_id =  device_entry.id
-    
-    async def _register_new_devices(self, new_devices):
-        """ reload platforms """
-        for device_coordinated in self._sunology_devices_coordinated:
-            for device in new_devices:
-                if device['device'].unique_id == device_coordinated['device'].unique_id:
-                    if device_coordinated['device'].device_entry_id is None:
-                        device_entry = await device_coordinated['device'].register(self.hass, self._entry) # Look to be the source of my issue
-                        device_coordinated['device'].device_entry_id = device_entry.id
-        await self._reload_platforms()
     
     async def _reload_platforms(self, epoch_min = math.floor(time.time()/60)):
         self._previous_refresh =  epoch_min
         if self._entry.state == ConfigEntryState.LOADED:
             await self.hass.config_entries.async_unload_platforms(self._entry, PLATFORMS)
             await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)
-        # else:
-        #     await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)
+
+    async def _register_new_devices(self, new_devices):
+        """ register a new device """
+        for device_coordinated in self._sunology_devices_coordinated:
+            for device in new_devices and device['device'].unique_id == device_coordinated['device'].unique_id:
+                if device_coordinated['device'].device_entry_id is None:
+                    device_entry = await device_coordinated['device'].register(self.hass, self._entry)
+                    device_coordinated['device'].device_entry_id = device_entry.id
+        await self._reload_platforms()
+    
+    
 
     @property
     def sunology_devices_coordinated(self):
