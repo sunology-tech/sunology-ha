@@ -115,7 +115,7 @@ class SunologyContext:
         self._gateway_port = gateway_port
 
         self._sunology_devices = []
-        self._sunology_devices_coordoned = []
+        self._sunology_devices_coordinated = []
         self._socket = None
         self._thread_started = False
         self._socket_thread = None
@@ -219,11 +219,11 @@ class SunologyContext:
                 update_interval=update_interval
             )
 
-            coordoned_device = {
+            coordinated_device = {
                 "device": device,
                 "coordinator": coordinator
             }
-            self._sunology_devices_coordoned.append(coordoned_device)
+            self._sunology_devices_coordinated.append(coordinated_device)
         
     
     def add_devices_to_coordinator(self, devices):
@@ -242,17 +242,17 @@ class SunologyContext:
             update_interval=update_interval
         )
 
-        coordoned_device = {
+        coordinated_device = {
             "device": device,
             "coordinator": coordinator
         }
-        self._sunology_devices_coordoned.append(coordoned_device)
+        self._sunology_devices_coordinated.append(coordinated_device)
         return coordinator
     
     def remove_devices_from_coordinator(self, device: SunologyAbstractDevice):
-        for coordoned_device in self._sunology_devices_coordoned:
-            if device['device'].unique_id == coordoned_device['device'].unique_id:
-                self._sunology_devices_coordoned.pop(coordoned_device)
+        for coordinated_device in self._sunology_devices_coordinated:
+            if device['device'].unique_id == coordinated_device['device'].unique_id:
+                self._sunology_devices_coordinated.pop(coordinated_device)
 
     async def refresh_devices(self):
         """ here we return last device by id"""
@@ -267,19 +267,19 @@ class SunologyContext:
 
         if epoch_min != self._previous_refresh:
             self._previous_refresh =  epoch_min
-            for device_coordoned in self._sunology_devices_coordoned:
-                if device_coordoned['device'].device_entry_id is None:
-                    device_entry = await device_coordoned['device'].register(self.hass, self._entry) # Look to be the source of my issue
-                    device_coordoned['device'].device_entry_id =  device_entry.id
+            for device_coordinated in self._sunology_devices_coordinated:
+                if device_coordinated['device'].device_entry_id is None:
+                    device_entry = await device_coordinated['device'].register(self.hass, self._entry) # Look to be the source of my issue
+                    device_coordinated['device'].device_entry_id =  device_entry.id
     
     async def _register_new_devices(self, new_devices):
         """ reload platforms """
-        for device_coordoned in self._sunology_devices_coordoned:
+        for device_coordinated in self._sunology_devices_coordinated:
             for device in new_devices:
-                if device['device'].unique_id == device_coordoned['device'].unique_id:
-                    if device_coordoned['device'].device_entry_id is None:
-                        device_entry = await device_coordoned['device'].register(self.hass, self._entry) # Look to be the source of my issue
-                        device_coordoned['device'].device_entry_id = device_entry.id
+                if device['device'].unique_id == device_coordinated['device'].unique_id:
+                    if device_coordinated['device'].device_entry_id is None:
+                        device_entry = await device_coordinated['device'].register(self.hass, self._entry) # Look to be the source of my issue
+                        device_coordinated['device'].device_entry_id = device_entry.id
         await self._reload_platforms()
     
     async def _reload_platforms(self, epoch_min = math.floor(time.time()/60)):
@@ -291,9 +291,9 @@ class SunologyContext:
         #     await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)
 
     @property
-    def sunology_devices_coordoned(self):
+    def sunology_devices_coordinated(self):
         """Return coordoned device"""
-        return self._sunology_devices_coordoned
+        return self._sunology_devices_coordinated
 
 
     @property
@@ -310,9 +310,9 @@ class SunologyContext:
     def process_new_device(self, product_data, sub_loop=False):
         new_devices = []
         found = False
-        for coordoned_device in self._sunology_devices_coordoned:
-            if 'device' not in coordoned_device.keys():
-                device = coordoned_device['device']
+        for coordinated_device in self._sunology_devices_coordinated:
+            if 'device' not in coordinated_device.keys():
+                device = coordinated_device['device']
                 if device.device_id == product_data['id']:
                     device.update_product(product_data)
                     found = True
@@ -407,9 +407,9 @@ class SunologyContext:
     def on_solarEvent_callback(self, data):
         """on solarEvent callback"""
         _LOGGER.info("On solarEvent received")
-        for coordoned_device in self._sunology_devices_coordoned:
-            device = coordoned_device['device']
-            coordinator = coordoned_device['coordinator']
+        for coordinated_device in self._sunology_devices_coordinated:
+            device = coordinated_device['device']
+            coordinator = coordinated_device['coordinator']
             if device.device_id == data['id']:
                 if isinstance(device, SolarEventInterface):
                     device.solar_event_update(data)
@@ -424,8 +424,8 @@ class SunologyContext:
                     "device_id": device.unique_id,
                     "device_name": device.name,
                 }
-                if 'device_entities' in coordoned_device.keys():
-                    for entity in coordoned_device['device_entities']:
+                if 'device_entities' in coordinated_device.keys():
+                    for entity in coordinated_device['device_entities']:
                         _LOGGER.debug('Update entity %s', entity.entity_id)
                         entity.schedule_update_ha_state(force_refresh=False)
                 break
@@ -434,27 +434,27 @@ class SunologyContext:
     def on_batteryEvent_callback(self, data):
         """on batteryEvent callback"""
         _LOGGER.info("On batteryEvent received")
-        for coordoned_device in self._sunology_devices_coordoned:
-            device = coordoned_device['device']
-            coordinator = coordoned_device['coordinator']
+        for coordinated_device in self._sunology_devices_coordinated:
+            device = coordinated_device['device']
+            coordinator = coordinated_device['coordinator']
             if device.device_id == data['id']:
                 if isinstance(device, StoreyMaster):
                     device.status = data['status']
                     device.acVoltage = data['acVoltage']
                     device.battery_event_update(data['battery'])
-                    if 'device_entities' in coordoned_device.keys():
-                        for entity in coordoned_device['device_entities']:
+                    if 'device_entities' in coordinated_device.keys():
+                        for entity in coordinated_device['device_entities']:
                             _LOGGER.debug('Update entity %s', entity.entity_id)
                             entity.schedule_update_ha_state(force_refresh=False)
 
                     for pack in data['packs']:
-                            for sub_coordoned_device in self._sunology_devices_coordoned:
-                                sub_device = sub_coordoned_device['device']
+                            for sub_coordinated_device in self._sunology_devices_coordinated:
+                                sub_device = sub_coordinated_device['device']
                                 if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":
                                     sub_device.battery_event_update(pack)
-                                    if 'device_entities' in sub_coordoned_device.keys():
+                                    if 'device_entities' in sub_coordinated_device.keys():
 
-                                        for entity in sub_coordoned_device['device_entities']:
+                                        for entity in sub_coordinated_device['device_entities']:
                                             _LOGGER.debug('Update entity %s', entity.entity_id)
                                             entity.schedule_update_ha_state(force_refresh=False)
                                     break
@@ -467,14 +467,14 @@ class SunologyContext:
     def on_gridEvent_callback(self, data):
         """on gridEvent callback"""
         _LOGGER.info("On gridEvent received")
-        for coordoned_device in self._sunology_devices_coordoned:
-            device = coordoned_device['device']
-            coordinator = coordoned_device['coordinator']
+        for coordinated_device in self._sunology_devices_coordinated:
+            device = coordinated_device['device']
+            coordinator = coordinated_device['coordinator']
             if device.device_id == data['id']:
                 if isinstance(device, (SmartMeter_3P, LinkyTransmitter)):
                     device.update_gridevent(data)
-                    if 'device_entities' in coordoned_device.keys():
-                        for entity in coordoned_device['device_entities']:
+                    if 'device_entities' in coordinated_device.keys():
+                        for entity in coordinated_device['device_entities']:
                             _LOGGER.debug('Update entity %s', entity.entity_id)
                             entity.schedule_update_ha_state(force_refresh=False)
                 else:
