@@ -12,7 +12,7 @@ import json
 from .const import PACKAGE_NAME
 
 
-_LOGGER = logging.getLogger(PACKAGE_NAME)
+_LOGGER = logging.getLogger(f"{PACKAGE_NAME}-socket")
 class SunologySocket():
     """docstring for SunologySocket"""
     def __init__(self):
