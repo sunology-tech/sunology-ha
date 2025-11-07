@@ -269,25 +269,14 @@ class SunologyContext:
             self._previous_refresh =  epoch_min
             for device_coordinated in self._sunology_devices_coordinated:
                 if device_coordinated['device'].device_entry_id is None:
-                    device_entry = await device_coordinated['device'].register(self.hass, self._entry)
-                    device_coordinated['device'].device_entry_id =  device_entry.id
+                    await device_coordinated['device'].register(self.hass, self._entry)
     
     async def _reload_platforms(self, epoch_min = math.floor(time.time()/60)):
+        _LOGGER.info("Call reload platforms")
         self._previous_refresh =  epoch_min
         if self._entry.state == ConfigEntryState.LOADED:
             await self.hass.config_entries.async_unload_platforms(self._entry, PLATFORMS)
             await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)
-
-    async def _register_new_devices(self, new_devices):
-        """ register a new device """
-        for device_coordinated in self._sunology_devices_coordinated:
-            for device in new_devices and device['device'].unique_id == device_coordinated['device'].unique_id:
-                if device_coordinated['device'].device_entry_id is None:
-                    device_entry = await device_coordinated['device'].register(self.hass, self._entry)
-                    device_coordinated['device'].device_entry_id = device_entry.id
-        await self._reload_platforms()
-    
-    
 
     @property
     def sunology_devices_coordinated(self):
@@ -306,27 +295,29 @@ class SunologyContext:
         self._socket = socket
 
 
-    def process_new_device(self, product_data, sub_loop=False):
+    def process_new_device(self, product_data):
         new_devices = []
         found = False
         for coordinated_device in self._sunology_devices_coordinated:
-            if 'device' not in coordinated_device.keys():
+            _LOGGER.info("Check if device %s is already known %s", product_data['id'], coordinated_device['device'].device_id)
+            if 'device' in coordinated_device.keys():
                 device = coordinated_device['device']
                 if device.device_id == product_data['id']:
-                    device.update_product(product_data)
                     found = True
+                    device.update_product(product_data)
+                    
                     if product_data['productName'] == "STREAM_CONNECT" and "devices" in product_data.keys():
                         for sub_device in product_data['devices']:
-                            new_devices.extend(self.process_new_device(sub_device, True))
+                            new_devices.extend(self.process_new_device(sub_device))
                     elif product_data['productName'] == "STOREY":
                         new_packs = []
                         for sub_device in self._sunology_devices:
                             if isinstance(sub_device, StoreyPack) and sub_device.device_id.split("#")[0] == device.device_id:
-                                pack_index = int(device_id.split("#")[1])
-                                if pack_index + 1 > product_data['packsCount']:
-                                    self._sunology_devices.pop(sub_device)
+                                pack_index = int(sub_device.device_id.split("#")[1])
+                                if pack_index > product_data['packCount']:
+                                    _LOGGER.info("Removed pack %s from storey %s", sub_device.device_id, device.device_id)
+                                    self._sunology_devices.remove(sub_device)
                                     self.remove_devices_from_coordinator(sub_device)
-                        
                         for pack in product_data['packs']:
                             pack_found = False
                             for sub_device in self._sunology_devices:
@@ -343,7 +334,8 @@ class SunologyContext:
                         self._sunology_devices.extend(new_packs)
                         self.add_devices_to_coordinator(new_packs)
                     break
-        if not found:
+        if found == False and 'productName' in product_data.keys():
+            _LOGGER.info("Device not found in coordoned device list %s , %s", product_data['id'], [x['device'].device_id for x in self._sunology_devices_coordinated])
             match product_data['productName']:
                 case "PLAY_MAX":
                     new_devices.append(PLAYMax(product_data))
@@ -353,7 +345,7 @@ class SunologyContext:
                     new_devices.append(Gateway(product_data))
                     if "devices" in product_data.keys():
                         for hub_device in product_data['devices']:
-                            new_devices.extend(self.process_new_device(hub_device, True))
+                            new_devices.extend(self.process_new_device(hub_device))
                 case "STOREY":
                     master = StoreyMaster(product_data)
                     products_valid=True
@@ -385,6 +377,8 @@ class SunologyContext:
                 case _:
                     _LOGGER.warning("Unmanaged device receive on device_event")
                     new_devices.append(SunologyAbstractDevice(product_data))
+        elif 'productName' not in product_data.keys():
+            _LOGGER.warning("No productName found for device %s", product_data)
         return new_devices
     
     @callback
@@ -397,9 +391,9 @@ class SunologyContext:
             self._sunology_devices.append(device)
             self.add_device_to_coordinator(device)
         if len(new_devices) > 0:
-            asyncio.run_coroutine_threadsafe(
-                self._register_new_devices(new_devices), self._hass.loop
-            )
+            self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
+                self._reload_platforms(), self._hass.loop
+            ))
 
 
     @callback
@@ -447,16 +441,15 @@ class SunologyContext:
                             entity.schedule_update_ha_state(force_refresh=False)
 
                     for pack in data['packs']:
-                            for sub_coordinated_device in self._sunology_devices_coordinated:
-                                sub_device = sub_coordinated_device['device']
-                                if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":
-                                    sub_device.battery_event_update(pack)
-                                    if 'device_entities' in sub_coordinated_device.keys():
-
-                                        for entity in sub_coordinated_device['device_entities']:
-                                            _LOGGER.debug('Update entity %s', entity.entity_id)
-                                            entity.schedule_update_ha_state(force_refresh=False)
-                                    break
+                        for sub_coordinated_device in self._sunology_devices_coordinated:
+                            sub_device = sub_coordinated_device['device']
+                            if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":
+                                sub_device.battery_event_update(pack)
+                                if 'device_entities' in sub_coordinated_device.keys():
+                                    for entity in sub_coordinated_device['device_entities']:
+                                        _LOGGER.debug('Update entity %s', entity.entity_id)
+                                        entity.schedule_update_ha_state(force_refresh=False)
+                                break
                 else:
                     _LOGGER.info("Solar event receive on non storey master device")
                 break
@@ -497,7 +490,4 @@ class SunologyContext:
             self._async_connect(self.socket, self.gateway_host, self.gateway_port, None), self._hass.loop
         ))
         self._connection_atempt+=1
-
-
-
 
