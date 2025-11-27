@@ -1,6 +1,7 @@
 """Home Assistant representation of an Sunology device."""
 from .const import SmartMeterPhase, SmartMeterTarifIndex,  DOMAIN as SUNOLOGY_DOMAIN, PACKAGE_NAME
 from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntry
+from homeassistant.helpers import device_registry as dr
 from typing import List
 import logging
 
@@ -103,13 +104,13 @@ class SunologyAbstractDevice():
         return dev_info
 
     async def register(self, hass, entry) -> DeviceEntry :
-        from homeassistant.helpers import device_registry as dr
-        device_registry = dr.async_get(hass)
-
-        return await device_registry.async_get_or_create(
+        device_registry_instance = dr.async_get(hass)
+        device_entry = await device_registry_instance.async_get_or_create(
             config_entry_id=entry.entry_id,
             **self.device_info
         )
+        self.device_entry_id = device_entry.id
+        return device_entry
 
 class SolarEventInterface():
     """Sunology extra porperties for events."""
@@ -581,8 +582,8 @@ class LinkyTransmitter(SunologyAbstractDevice):
         return self._indexes_erl
 
     def update_gridevent(self, raw_grid_event):
-        if "apparentPower" in raw_grid_event.keys():
-            self._app_power_usage = raw_grid_event['apparentPower']
+        if "appPowerUsage" in raw_grid_event.keys():
+            self._app_power_usage = raw_grid_event['appPowerUsage']
         if "appPowerProd" in raw_grid_event.keys():
             self._app_power_prod = raw_grid_event['appPowerProd']
         if "indexesErl" in raw_grid_event.keys():

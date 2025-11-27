@@ -89,7 +89,7 @@ async def async_unload_entry(hass, entry: SunologyConfigEntry):
     
     context =  entry.runtime_data
     await context.socket.disconnect() # Disconnect only if all devices is disabled
-
+    context.unload()
     return unload_ok
 
 
@@ -115,12 +115,14 @@ class SunologyContext:
         self._gateway_port = gateway_port
 
         self._sunology_devices = []
-        self._sunology_devices_coordoned = []
+        self._sunology_devices_coordinated = []
         self._socket = None
         self._thread_started = False
         self._socket_thread = None
         self._connection_atempt = 0
         self._previous_refresh = math.floor(time.time()/60)
+        self._coroutines_future = []
+
     @property
     def hass(self):
         """ hass """
@@ -145,6 +147,13 @@ class SunologyContext:
     def sunology_devices(self, devices):
         """ Sunology devices list """
         self._sunology_devices = devices
+    
+    def unload(self):
+        """ hass """
+        for future in self._coroutines_future:
+            future.cancel()
+        self._coroutines_future = []
+
 
     async def _async_connect(self, socket, host, port, token):
         """connect to Sunology socket"""
@@ -178,9 +187,9 @@ class SunologyContext:
 
         self._socket = socket
 
-        asyncio.run_coroutine_threadsafe(
+        self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
             self._async_connect(socket, self.gateway_host, self.gateway_port, None), self._hass.loop
-        )
+        ))
 
     async def get_device(self, device_id):
         """ here we return last device by id"""
@@ -210,11 +219,11 @@ class SunologyContext:
                 update_interval=update_interval
             )
 
-            coordoned_device = {
+            coordinated_device = {
                 "device": device,
                 "coordinator": coordinator
             }
-            self._sunology_devices_coordoned.append(coordoned_device)
+            self._sunology_devices_coordinated.append(coordinated_device)
         
     
     def add_devices_to_coordinator(self, devices):
@@ -223,6 +232,7 @@ class SunologyContext:
         
     
     def add_device_to_coordinator(self, device: SunologyAbstractDevice):
+        _LOGGER.debug("Device added to coordinator %s, %s", device.model_name, device.device_id)
         update_interval = timedelta(minutes=MIN_UNTIL_REFRESH)
         coordinator = DataUpdateCoordinator[Mapping[str, Any]](
             self._hass,
@@ -232,17 +242,17 @@ class SunologyContext:
             update_interval=update_interval
         )
 
-        coordoned_device = {
+        coordinated_device = {
             "device": device,
             "coordinator": coordinator
         }
-        self._sunology_devices_coordoned.append(coordoned_device)
+        self._sunology_devices_coordinated.append(coordinated_device)
         return coordinator
     
     def remove_devices_from_coordinator(self, device: SunologyAbstractDevice):
-        for coordoned_device in self._sunology_devices_coordoned:
-            if device['device'].unique_id == coordoned_device['device'].unique_id:
-                self._sunology_devices_coordoned.pop(coordoned_device)
+        for coordinated_device in self._sunology_devices_coordinated:
+            if device['device'].unique_id == coordinated_device['device'].unique_id:
+                self._sunology_devices_coordinated.pop(coordinated_device)
 
     async def refresh_devices(self):
         """ here we return last device by id"""
@@ -250,31 +260,28 @@ class SunologyContext:
         epoch_min = math.floor(time.time()/60)
         if not self.socket.is_connected:
             _LOGGER.info("Socket not connected detected, atempt: %s", self._connection_atempt)
-            asyncio.run_coroutine_threadsafe(
+            self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
                 self._async_connect(self.socket, self.gateway_host, self.gateway_port, None), self._hass.loop
-            )
+            ))
             self._connection_atempt+=1
 
         if epoch_min != self._previous_refresh:
-            self._reload_platforms(False, epoch_min)
-
-    async def _reload_platforms(self, new_devices=False, epoch_min = math.floor(time.time()/60)):
-        """ reload platforms """
+            self._previous_refresh =  epoch_min
+            for device_coordinated in self._sunology_devices_coordinated:
+                if device_coordinated['device'].device_entry_id is None:
+                    await device_coordinated['device'].register(self.hass, self._entry)
+    
+    async def _reload_platforms(self, epoch_min = math.floor(time.time()/60)):
+        _LOGGER.info("Call reload platforms")
         self._previous_refresh =  epoch_min
-        for device_coordoned in self._sunology_devices_coordoned:
-            device_entry = await device_coordoned['device'].register(self.hass, self._entry)
-            device_coordoned['device'].device_entry_id =  device_entry.id
-
-        if self._entry.state == ConfigEntryState.LOADED and new_devices:
+        if self._entry.state == ConfigEntryState.LOADED:
             await self.hass.config_entries.async_unload_platforms(self._entry, PLATFORMS)
             await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)
-        # else:
-        #     await self.hass.config_entries.async_forward_entry_setups(self._entry, PLATFORMS)
 
     @property
-    def sunology_devices_coordoned(self):
+    def sunology_devices_coordinated(self):
         """Return coordoned device"""
-        return self._sunology_devices_coordoned
+        return self._sunology_devices_coordinated
 
 
     @property
@@ -287,27 +294,30 @@ class SunologyContext:
         """set the Sunology socket"""
         self._socket = socket
 
-    
-    @callback
-    def on_productInfo_callback(self, product_data):
-        """on device callback"""
-        _LOGGER.info("On device received '%s'", product_data['productName'])
+
+    def process_new_device(self, product_data):
+        new_devices = []
         found = False
-        for coordoned_device in self._sunology_devices_coordoned:
-            if 'device' not in coordoned_device.keys():
-                device = coordoned_device['device']
+        for coordinated_device in self._sunology_devices_coordinated:
+            _LOGGER.info("Check if device %s is already known %s", product_data['id'], coordinated_device['device'].device_id)
+            if 'device' in coordinated_device.keys():
+                device = coordinated_device['device']
                 if device.device_id == product_data['id']:
-                    device.update_product(product_data)
                     found = True
-                    if product_data['productName'] == "STOREY":
+                    device.update_product(product_data)
+                    
+                    if product_data['productName'] == "STREAM_CONNECT" and "devices" in product_data.keys():
+                        for sub_device in product_data['devices']:
+                            new_devices.extend(self.process_new_device(sub_device))
+                    elif product_data['productName'] == "STOREY":
                         new_packs = []
                         for sub_device in self._sunology_devices:
                             if isinstance(sub_device, StoreyPack) and sub_device.device_id.split("#")[0] == device.device_id:
-                                pack_index = int(device_id.split("#")[1])
-                                if pack_index + 1 > product_data['packsCount']:
-                                    self._sunology_devices.pop(sub_device)
+                                pack_index = int(sub_device.device_id.split("#")[1])
+                                if pack_index > product_data['packCount']:
+                                    _LOGGER.info("Removed pack %s from storey %s", sub_device.device_id, device.device_id)
+                                    self._sunology_devices.remove(sub_device)
                                     self.remove_devices_from_coordinator(sub_device)
-                        
                         for pack in product_data['packs']:
                             pack_found = False
                             for sub_device in self._sunology_devices:
@@ -322,63 +332,77 @@ class SunologyContext:
                                 st_pack.maxOutput = pack['maxProd']
                                 new_packs.append(st_pack)
                         self._sunology_devices.extend(new_packs)
-                        coordinator = self.add_devices_to_coordinator(new_packs)
+                        self.add_devices_to_coordinator(new_packs)
                     break
-        if not found:
-            devices = []
+        if found == False and 'productName' in product_data.keys():
+            _LOGGER.info("Device not found in coordoned device list %s , %s", product_data['id'], [x['device'].device_id for x in self._sunology_devices_coordinated])
             match product_data['productName']:
                 case "PLAY_MAX":
-                    devices.append(PLAYMax(product_data))
+                    new_devices.append(PLAYMax(product_data))
                 case "PLAY":
-                    devices.append(PLAY(product_data))
+                    new_devices.append(PLAY(product_data))
                 case "STREAM_CONNECT":
-                    devices.append(Gateway(product_data))
+                    new_devices.append(Gateway(product_data))
                     if "devices" in product_data.keys():
                         for hub_device in product_data['devices']:
-                            self.on_productInfo_callback(hub_device)
+                            new_devices.extend(self.process_new_device(hub_device))
                 case "STOREY":
                     master = StoreyMaster(product_data)
+                    products_valid=True
                     if 'battery' not in product_data.keys():
-                        _LOGGER.error("No battery data found for Storey %s", product_data['id'])
-                        raise HomeAssistantError(f"No battery data found for Storey {product_data['id']}")
+                        _LOGGER.warning("No battery data found for Storey %s", product_data['id'])
+                        #raise HomeAssistantError(f"No battery data found for Storey {product_data['id']}")
+                        products_valid=False
                     else:
                         master.capacity = product_data['battery']['capacity']
                         master.maxInput = product_data['battery']['maxCons']
                         master.maxOutput = product_data['battery']['maxProd']
                     if 'packs' not in product_data.keys():
-                        _LOGGER.error("No packs data found for Storey %s", product_data['id'])
-                        raise HomeAssistantError(f"No packs data found for Storey {product_data['id']}")
+                        _LOGGER.warning("No packs data found for Storey %s", product_data['id'])
+                        products_valid=False
+                        #raise HomeAssistantError(f"No packs data found for Storey {product_data['id']}")
                     else:
                         for pack in product_data['packs']:
                             st_pack = StoreyPack(product_data, pack['packIndex'])
                             st_pack.capacity = pack['capacity']
                             st_pack.maxInput = pack['maxCons']
                             st_pack.maxOutput = pack['maxProd']
-                            devices.append(st_pack)
-                    devices.append(master)
+                            new_devices.append(st_pack)
+                    if products_valid:
+                        new_devices.append(master)
                 case "STREAM_METER":
-                    devices.append(SmartMeter_3P(product_data))
+                    new_devices.append(SmartMeter_3P(product_data))
                 case "ERL_GEN2":
-                    devices.append(LinkyTransmitter(product_data))
-                    
+                    new_devices.append(LinkyTransmitter(product_data))
                 case _:
                     _LOGGER.warning("Unmanaged device receive on device_event")
-                    devices.append(SunologyAbstractDevice(product_data))
-            self._sunology_devices.extend(devices)
-            coordinator = self.add_devices_to_coordinator(devices)
-            if len(devices) > 0:
-                asyncio.run_coroutine_threadsafe(
-                    self._reload_platforms(new_devices=True), self._hass.loop
-                )
+                    new_devices.append(SunologyAbstractDevice(product_data))
+        elif 'productName' not in product_data.keys():
+            _LOGGER.warning("No productName found for device %s", product_data)
+        return new_devices
+    
+    @callback
+    def on_productInfo_callback(self, product_data):
+        """on device callback"""
+        _LOGGER.info("On device received '%s'", product_data['productName'])
+        new_devices = self.process_new_device(product_data)
+        for device in new_devices:
+            _LOGGER.info("New devices found %s", device)
+            self._sunology_devices.append(device)
+            self.add_device_to_coordinator(device)
+        if len(new_devices) > 0:
+            self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
+                self._reload_platforms(), self._hass.loop
+            ))
 
 
     @callback
     def on_solarEvent_callback(self, data):
         """on solarEvent callback"""
         _LOGGER.info("On solarEvent received")
-        for coordoned_device in self._sunology_devices_coordoned:
-            device = coordoned_device['device']
-            coordinator = coordoned_device['coordinator']
+        for coordinated_device in self._sunology_devices_coordinated:
+            device = coordinated_device['device']
+            coordinator = coordinated_device['coordinator']
             if device.device_id == data['id']:
                 if isinstance(device, SolarEventInterface):
                     device.solar_event_update(data)
@@ -393,8 +417,8 @@ class SunologyContext:
                     "device_id": device.unique_id,
                     "device_name": device.name,
                 }
-                if 'device_entities' in coordoned_device.keys():
-                    for entity in coordoned_device['device_entities']:
+                if 'device_entities' in coordinated_device.keys():
+                    for entity in coordinated_device['device_entities']:
                         _LOGGER.debug('Update entity %s', entity.entity_id)
                         entity.schedule_update_ha_state(force_refresh=False)
                 break
@@ -403,30 +427,29 @@ class SunologyContext:
     def on_batteryEvent_callback(self, data):
         """on batteryEvent callback"""
         _LOGGER.info("On batteryEvent received")
-        for coordoned_device in self._sunology_devices_coordoned:
-            device = coordoned_device['device']
-            coordinator = coordoned_device['coordinator']
+        for coordinated_device in self._sunology_devices_coordinated:
+            device = coordinated_device['device']
+            coordinator = coordinated_device['coordinator']
             if device.device_id == data['id']:
                 if isinstance(device, StoreyMaster):
                     device.status = data['status']
                     device.acVoltage = data['acVoltage']
                     device.battery_event_update(data['battery'])
-                    if 'device_entities' in coordoned_device.keys():
-                        for entity in coordoned_device['device_entities']:
+                    if 'device_entities' in coordinated_device.keys():
+                        for entity in coordinated_device['device_entities']:
                             _LOGGER.debug('Update entity %s', entity.entity_id)
                             entity.schedule_update_ha_state(force_refresh=False)
 
                     for pack in data['packs']:
-                            for sub_coordoned_device in self._sunology_devices_coordoned:
-                                sub_device = sub_coordoned_device['device']
-                                if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":
-                                    sub_device.battery_event_update(pack)
-                                    if 'device_entities' in sub_coordoned_device.keys():
-
-                                        for entity in sub_coordoned_device['device_entities']:
-                                            _LOGGER.debug('Update entity %s', entity.entity_id)
-                                            entity.schedule_update_ha_state(force_refresh=False)
-                                    break
+                        for sub_coordinated_device in self._sunology_devices_coordinated:
+                            sub_device = sub_coordinated_device['device']
+                            if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":
+                                sub_device.battery_event_update(pack)
+                                if 'device_entities' in sub_coordinated_device.keys():
+                                    for entity in sub_coordinated_device['device_entities']:
+                                        _LOGGER.debug('Update entity %s', entity.entity_id)
+                                        entity.schedule_update_ha_state(force_refresh=False)
+                                break
                 else:
                     _LOGGER.info("Solar event receive on non storey master device")
                 break
@@ -436,15 +459,16 @@ class SunologyContext:
     def on_gridEvent_callback(self, data):
         """on gridEvent callback"""
         _LOGGER.info("On gridEvent received")
-        for coordoned_device in self._sunology_devices_coordoned:
-            device = coordoned_device['device']
-            coordinator = coordoned_device['coordinator']
+        for coordinated_device in self._sunology_devices_coordinated:
+            device = coordinated_device['device']
+            coordinator = coordinated_device['coordinator']
             if device.device_id == data['id']:
                 if isinstance(device, (SmartMeter_3P, LinkyTransmitter)):
                     device.update_gridevent(data)
-                    for entity in coordoned_device['device_entities']:
-                        _LOGGER.debug('Update entity %s', entity.entity_id)
-                        entity.schedule_update_ha_state(force_refresh=False)
+                    if 'device_entities' in coordinated_device.keys():
+                        for entity in coordinated_device['device_entities']:
+                            _LOGGER.debug('Update entity %s', entity.entity_id)
+                            entity.schedule_update_ha_state(force_refresh=False)
                 else:
                     _LOGGER.info("Grid event receive on non grid meter device")
                 event_data = {
@@ -462,11 +486,8 @@ class SunologyContext:
     def on_disconnect_callback(self):
         """on gridEvent callback"""
         _LOGGER.info("On disconnect received %s", self._connection_atempt)
-        asyncio.run_coroutine_threadsafe(
+        self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
             self._async_connect(self.socket, self.gateway_host, self.gateway_port, None), self._hass.loop
-        )
+        ))
         self._connection_atempt+=1
-
-
-
 

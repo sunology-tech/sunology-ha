@@ -32,75 +32,80 @@ _LOGGER = logging.getLogger(PACKAGE_NAME)
 async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: disable=W0613
     """Set up Sunology device based off an entry."""
     sunology_context = config_entry.runtime_data
-    coordoned_devices = sunology_context.sunology_devices_coordoned
+    coordinated_devices = sunology_context.sunology_devices_coordinated
 
-    entities = []
-    for coordoned_device in coordoned_devices:
-        device = coordoned_device['device']
-        coordinator = coordoned_device['coordinator']
-        if not 'device_entities' in coordoned_device:coordoned_device['device_entities'] = []
+    known_devices_ids: set[str] = set()
 
-        #hass.data[SUNOLOGY_DOMAIN]["devices"][device.device_id] = coordinator
-        if isinstance(device, SolarEventInterface):
-            coordoned_device['device_entities'].append(SunologPvPowerSensorEntity(device, hass))
-            coordoned_device['device_entities'].append(SunologMiPowerSensorEntity(device, hass))
+    def _check_device() -> None:
+        current_devices_ids = set(coordinated_device['device'].device_id for coordinated_device in coordinated_devices)
+        new_devices_ids = current_devices_ids - known_devices_ids
+        if new_devices_ids:
+            known_devices_ids.update(new_devices_ids)
+            entities = []
+            for coordinated_device_id in new_devices_ids:
+                coordinated_device = next((coordinated_device for coordinated_device in coordinated_devices if coordinated_device['device'].device_id == coordinated_device_id), None)
+                device = coordinated_device['device']
+                coordinator = coordinated_device['coordinator']
+                if not 'device_entities' in coordinated_device: 
+                    coordinated_device['device_entities'] = []
 
-        if isinstance(device, BatteryEventInterface):
-            coordoned_device['device_entities'].append(SunologyBatteryPowerSensorEntity(device, hass))
-            coordoned_device['device_entities'].append(SunologyBatterySocSensorEntity(device, hass))
-            coordoned_device['device_entities'].append(SunologyBatteryTempSensorEntity(device, hass))
-            if(isinstance(device,(StoreyMaster, StoreyPack))):
-                coordoned_device['device_entities'].append(SunologyBatteryCellsTempSensorEntity(device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryRadTempSensorEntity(device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryTargetPowerSensorEntity(device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryDcVoltageSensorEntity(device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryDcCurrentSensorEntity(device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryEnergyProducedSensorEntity(device, hass))
-                coordoned_device['device_entities'].append(SunologyBatteryEnergyConsumedSensorEntity(device, hass))
-        
-        if isinstance(device, StoreyMaster):
-            coordoned_device['device_entities'].append(SunologyBatteryMasterStatusSensorEntity(device, hass))
-            coordoned_device['device_entities'].append(SunologyBatteryMasterAcVoltageSensorEntity(device, hass))
+                if isinstance(device, SolarEventInterface):
+                    coordinated_device['device_entities'].append(SunologPvPowerSensorEntity(device, hass))
+                    coordinated_device['device_entities'].append(SunologMiPowerSensorEntity(device, hass))
 
-        if isinstance(device, SmartMeter_3P):
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
-            coordoned_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_3, hass))
-            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
-            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
-            coordoned_device['device_entities'].append(SunologyElectricityFrequencySensorEntity(device, hass))
-        if isinstance(device, LinkyTransmitter):
-            coordoned_device['device_entities'].append(SunologyApparentPowerImportSensorEntity(device, hass))
-            coordoned_device['device_entities'].append(SunologyApparentPowerExportSensorEntity(device, hass))
-            coordoned_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_1, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_2, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_3, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_4, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_5, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_6, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_7, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_8, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_9, hass))
-            coordoned_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_10, hass))
-            coordoned_device['device_entities'].append(SunologyContractSensorEntity(device, hass))
-            coordoned_device['device_entities'].append(SunologyCurrentTarifSensorEntity(device, hass))
+                if isinstance(device, BatteryEventInterface):
+                    coordinated_device['device_entities'].append(SunologyBatteryPowerSensorEntity(device, hass))
+                    coordinated_device['device_entities'].append(SunologyBatterySocSensorEntity(device, hass))
+                    coordinated_device['device_entities'].append(SunologyBatteryTempSensorEntity(device, hass))
+                    if(isinstance(device,(StoreyMaster, StoreyPack))):
+                        coordinated_device['device_entities'].append(SunologyBatteryCellsTempSensorEntity(device, hass))
+                        coordinated_device['device_entities'].append(SunologyBatteryRadTempSensorEntity(device, hass))
+                        coordinated_device['device_entities'].append(SunologyBatteryTargetPowerSensorEntity(device, hass))
+                        coordinated_device['device_entities'].append(SunologyBatteryDcVoltageSensorEntity(device, hass))
+                        coordinated_device['device_entities'].append(SunologyBatteryDcCurrentSensorEntity(device, hass))
+                        coordinated_device['device_entities'].append(SunologyBatteryEnergyProducedSensorEntity(device, hass))
+                        coordinated_device['device_entities'].append(SunologyBatteryEnergyConsumedSensorEntity(device, hass))
+                
+                if isinstance(device, StoreyMaster):
+                    coordinated_device['device_entities'].append(SunologyBatteryMasterStatusSensorEntity(device, hass))
+                    coordinated_device['device_entities'].append(SunologyBatteryMasterAcVoltageSensorEntity(device, hass))
 
-        coordoned_device['device_entities'].append(SunologyRssiSensorEntity(device, hass))
+                if isinstance(device, SmartMeter_3P):
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.ALL, hass))
+                    coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+                    coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_1, hass))
+                    coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
+                    coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_2, hass))
+                    coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
+                    coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_3, hass))
+                    coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
+                    coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricityFrequencySensorEntity(device, hass))
+                if isinstance(device, LinkyTransmitter):
+                    coordinated_device['device_entities'].append(SunologyApparentPowerImportSensorEntity(device, hass))
+                    coordinated_device['device_entities'].append(SunologyApparentPowerExportSensorEntity(device, hass))
+                    coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+                    coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_1, hass))
+                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_2, hass))
+                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_3, hass))
+                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_4, hass))
+                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_5, hass))
+                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_6, hass))
+                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_7, hass))
+                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_8, hass))
+                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_9, hass))
+                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_10, hass))
+                    coordinated_device['device_entities'].append(SunologyContractSensorEntity(device, hass))
+                    coordinated_device['device_entities'].append(SunologyCurrentTarifSensorEntity(device, hass))
 
-
-        entities.extend(coordoned_device['device_entities'])
-
-    async_add_entities(entities)
-
+                coordinated_device['device_entities'].append(SunologyRssiSensorEntity(device, hass))
+                entities.extend(coordinated_device['device_entities'])
+            async_add_entities(entities)
+    _check_device()
     return True
 
 class SunologPvPowerSensorEntity(SensorEntity):
@@ -108,6 +113,7 @@ class SunologPvPowerSensorEntity(SensorEntity):
 
     def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologPvPowerSensor entity."""
+        
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
