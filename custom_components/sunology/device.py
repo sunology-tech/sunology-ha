@@ -1,5 +1,5 @@
 """Home Assistant representation of an Sunology device."""
-from .const import SmartMeterPhase, SmartMeterTarifIndex,  DOMAIN as SUNOLOGY_DOMAIN, PACKAGE_NAME
+from .const import SmartMeterPhase, SmartMeterTarifIndex, ElectricalDataFeature, DOMAIN as SUNOLOGY_DOMAIN, PACKAGE_NAME
 from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntry
 from homeassistant.helpers import device_registry as dr
 from typing import List
@@ -463,6 +463,119 @@ class SmartMeter_ElectricalData():
         if 'prodTot' in raw_electrical_data.keys():
             self._prod_tot = raw_electrical_data['prodTot']
 
+
+class SmartMeter_ElectricalDataFeatures():
+    """Home Assistant representation of a Sunology SmartMeter_electrical_data_feature property."""
+
+    def __init__(self, electricalData=None, electricalDataP1=None, electricalDataP2=None, electricalDataP3=None, 
+                    flow_ready=None, estimated_power_usage=None, min_active_time=None, max_active_time=None, 
+                    min_energy_usage=None, max_energy_usage=None, priority=None):
+        """Initialize SmartMeter_electrical_data property."""
+        self._flow_ready = flow_ready
+        self._estimated_power_usage = estimated_power_usage
+        self._min_active_time = min_active_time
+        self._max_active_time = max_active_time
+        self._min_energy_usage = min_energy_usage
+        self._max_energy_usage = max_energy_usage
+        self._priority = priority
+        self._electricalData = electricalData
+        self._electricalDataP1 = electricalDataP1
+        self._electricalDataP2 = electricalDataP2
+        self._electricalDataP3 = electricalDataP3
+    
+    @property
+    def flow_ready(self):
+        """Get the flow_ready"""
+        return self._flow_ready
+
+    @property
+    def estimated_power_usage(self):
+        """Get the estimated_power_usage"""
+        return self._estimated_power_usage
+
+    @property
+    def min_active_time(self):
+        """Get the min_active_time"""
+        return self._min_active_time
+
+    @property
+    def max_active_time(self):
+        """Get the max_active_time"""
+        return self._max_active_time
+
+    @property
+    def min_energy_usage(self):
+        """Get the min_energy_usage"""
+        return self._min_energy_usage
+
+    @property
+    def max_energy_usage(self):
+        """Get the max_energy_usage"""
+        return self._max_energy_usage
+
+    @property
+    def priority(self):
+        """Get the priority"""
+        return self._priority
+    
+    @property
+    def electricalData(self):
+        """Get the electricalData"""
+        return self._electricalData
+
+    @property
+    def electricalDataP1(self):
+        """Get the electricalDataP1"""
+        return self._electricalDataP1
+
+    @property
+    def electricalDataP2(self):
+        """Get the electricalDataP2"""
+        return self._electricalDataP2
+
+    @property
+    def electricalDataP3(self):
+        """Get the electricalDataP3"""
+        return self._electricalDataP3
+
+    def update_electrical_data_feature(self, raw_electrical_data_feature):
+        if 'electricalData' in raw_electrical_data_feature.keys():
+            self._electricalData = raw_electrical_data_feature['electricalData']
+        else:
+            self._electricalData = ElectricalDataFeature.UNUSED
+
+        if 'electricalDataP1' in raw_electrical_data_feature.keys():
+            self._electricalDataP1 = raw_electrical_data_feature['electricalDataP1']
+        else:
+            self._electricalDataP1 = ElectricalDataFeature.UNUSED
+
+        if 'electricalDataP2' in raw_electrical_data_feature.keys():
+            self._electricalDataP2 = raw_electrical_data_feature['electricalDataP2']
+        else:
+            self._electricalDataP2 = ElectricalDataFeature.UNUSED
+
+        if 'electricalDataP3' in raw_electrical_data_feature.keys():
+            self._electricalDataP3 = raw_electrical_data_feature['electricalDataP3']
+        else:
+            self._electricalDataP3 = ElectricalDataFeature.UNUSED
+
+
+        if 'flowConfig' in raw_electrical_data_feature.keys():
+            if 'flowReady' in raw_electrical_data_feature['flowConfig'].keys():
+                self._flow_ready = raw_electrical_data_feature['flowReady']
+            if 'estimatedPowerUsage' in raw_electrical_data_feature['flowConfig'].keys():
+                self._estimated_power_usage = raw_electrical_data_feature['flowConfig']['estimatedPowerUsage']
+            if 'minActiveTime' in raw_electrical_data_feature['flowConfig'].keys():
+                self._min_active_time = raw_electrical_data_feature['flowConfig']['minActiveTime']
+            if 'maxActiveTime' in raw_electrical_data_feature['flowConfig'].keys():
+                self._max_active_time = raw_electrical_data_feature['flowConfig']['maxActiveTime']
+            if 'minEnergyUsage' in raw_electrical_data_feature['flowConfig'].keys():
+                self._min_energy_usage = raw_electrical_data_feature['flowConfig']['minEnergyUsage']
+            if 'maxEnergyUsage' in raw_electrical_data_feature['flowConfig'].keys():
+                self._max_energy_usage = raw_electrical_data_feature['flowConfig']['maxEnergyUsage']
+            if 'priority' in raw_electrical_data_feature['flowConfig'].keys():
+                self._priority = raw_electrical_data_feature['flowConfig']['priority']
+
 class SmartMeter_IndexesErl():
     """Home Assistant representation of a Sunology SmartMeter_IndexesErl property."""
 
@@ -606,6 +719,9 @@ class SmartMeter_3P(SunologyAbstractDevice):
             SmartMeterPhase.PHASE_2:   SmartMeter_ElectricalData(),
             SmartMeterPhase.PHASE_3:   SmartMeter_ElectricalData()
         }
+        if 'features' in raw_smartmeter.keys():
+            self._features = SmartMeter_ElectricalDataFeatures()
+            self._features.update_electrical_data_feature(raw_smartmeter['features'])
 
     @property
     def suggested_area(self) -> str:
@@ -631,6 +747,11 @@ class SmartMeter_3P(SunologyAbstractDevice):
     def electrical_data(self):
         """Get the electrical_data"""
         return self._electrical_data
+    
+    @property
+    def features(self):
+        """Get the features"""
+        return self._features
 
     def update_gridevent(self, raw_grid_event):
         if "freq" in raw_grid_event.keys():
@@ -643,6 +764,13 @@ class SmartMeter_3P(SunologyAbstractDevice):
             self.electrical_data[SmartMeterPhase.PHASE_2].update_electrical_data(raw_grid_event['electricalDataP2'])
         if "electricalDataP3" in raw_grid_event.keys():
             self.electrical_data[SmartMeterPhase.PHASE_3].update_electrical_data(raw_grid_event['electricalDataP3'])
+    
+    def update_product(self, raw_event):
+        super().update_product(raw_event)
+        if 'features' in raw_event.keys():
+            if self._features is None:
+                self._features = SmartMeter_ElectricalDataFeatures()
+            self._features.update_electrical_data_feature(raw_event['features'])
 
     def __str__(self) -> str:
         """Get string representation."""
