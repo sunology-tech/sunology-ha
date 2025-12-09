@@ -262,7 +262,7 @@ class SunologyBatteryPowerSensorEntity(SensorEntity):
     @property
     def state(self):
         """state property"""
-        self._state = self._device.batP
+        self._state = (self._device.batP * -1) if self._device.batP is not None else self._device.batP
         return self._state
 
     @property
@@ -324,7 +324,7 @@ class SunologyBatteryTargetPowerSensorEntity(SensorEntity):
     @property
     def state(self):
         """state property"""
-        self._state = self._device.targetPow
+        self._state = (self._device.targetPow * -1) if self._device.targetPow is not None else self._device.targetPow
         return self._state
 
     @property
