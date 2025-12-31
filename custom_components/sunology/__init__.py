@@ -163,12 +163,16 @@ class SunologyContext:
             zc = await zeroconf.async_get_instance(self._hass)
             await zc.async_wait_for_start()
             resolver = AddressResolver(host)
-            if await resolver.async_request(zc, 3000):
-                host_ip_obj = resolver.ip_addresses_by_version(IPVersion.All)
-                host_ip = str(host_ip_obj[0])
-                _LOGGER.debug(f"{host} IP addresses: {host_ip}")
-            else:
-                _LOGGER.error(f"Name {host} not resolved")
+            for i in range(15):
+                _LOGGER.debug(f"Try {i} to resolve {host}")
+                if await resolver.async_request(zc, 3000):
+                    host_ip_obj = resolver.ip_addresses_by_version(IPVersion.All)
+                    host_ip = str(host_ip_obj[0])
+                    _LOGGER.debug(f"{host} IP addresses: {host_ip}")
+                    break
+                else:
+                    _LOGGER.error(f"Name {host} not resolved")
+                    await asyncio.sleep(5)
         await socket.connect(host_ip, port, None)
         
 
