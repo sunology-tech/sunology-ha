@@ -13,7 +13,7 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
 )
 
-from .const import SmartMeterPhase, SmartMeterTarifIndex, PACKAGE_NAME, DOMAIN as SUNOLOGY_DOMAIN
+from .const import SmartMeterPhase, SmartMeterTarifIndex, ElectricalDataFeature,  PACKAGE_NAME, DOMAIN as SUNOLOGY_DOMAIN
 from .device import (
     PLAYMax,
     Gateway,
@@ -72,17 +72,25 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
 
                 if isinstance(device, SmartMeter_3P):
                     coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.ALL, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.ALL, hass, True))
                     coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
                     coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.ALL, hass))
                     coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_1, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_1, hass, True))
                     coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
                     coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.PHASE_1, hass))
                     coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_2, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_2, hass, True))
                     coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
                     coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.PHASE_2, hass))
                     coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_3, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_3, hass, True))
                     coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
                     coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
+                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.PHASE_3, hass))
                     coordinated_device['device_entities'].append(SunologyElectricityFrequencySensorEntity(device, hass))
                 if isinstance(device, LinkyTransmitter):
                     coordinated_device['device_entities'].append(SunologyApparentPowerImportSensorEntity(device, hass))
@@ -254,7 +262,7 @@ class SunologyBatteryPowerSensorEntity(SensorEntity):
     @property
     def state(self):
         """state property"""
-        self._state = self._device.batP
+        self._state = (self._device.batP * -1) if self._device.batP is not None else self._device.batP
         return self._state
 
     @property
@@ -316,7 +324,7 @@ class SunologyBatteryTargetPowerSensorEntity(SensorEntity):
     @property
     def state(self):
         """state property"""
-        self._state = self._device.targetPow
+        self._state = (self._device.targetPow * -1) if self._device.targetPow is not None else self._device.targetPow
         return self._state
 
     @property
@@ -1049,13 +1057,15 @@ class SunologyBatteryMasterPowerSensorEntity(SensorEntity):
 class SunologyElectricalDataSensorEntity_Power(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self, device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
+    def __init__(self, device:SunologyAbstractDevice, phase:SmartMeterPhase, hass, reversed_state=False):
         """Set up SunologBatteryPowerSensor entity.""" 
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
         self._phase = phase
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"edPower")}_{self._phase}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._reversed = reversed_state
+        self._entity_registry_enabled_default = reversed_state
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"edPower")}_{self._phase}_{"reversed_" if self._reversed else ""}{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
         self._state = None
         self._hass = hass
     
@@ -1074,12 +1084,12 @@ class SunologyElectricalDataSensorEntity_Power(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"power_{self._phase}_{device_registry.format_mac(self._device.device_id)}"
+        return f"power_{self._phase}_{"reversed_" if self._reversed else ""}{device_registry.format_mac(self._device.device_id)}"
 
     @property
     def state(self):
         """state property"""
-        self._state = self._device.electrical_data[self._phase].power
+        self._state = self._device.electrical_data[self._phase].power * -1 if self._reversed and self._device.electrical_data[self._phase].power is not None else  self._device.electrical_data[self._phase].power
         return self._state
 
     @property
@@ -1090,7 +1100,7 @@ class SunologyElectricalDataSensorEntity_Power(SensorEntity):
     @property
     def name(self):
         """ Entity name """
-        return f"{self._name} {self._phase} electrical data Power"
+        return f"{self._name} {self._phase} electrical data Power{" (reversed)" if self._reversed else ""}"
 
     @property
     def icon(self):
@@ -1106,11 +1116,88 @@ class SunologyElectricalDataSensorEntity_Power(SensorEntity):
     def device_class(self):
         """ Entity device_class """
         return SensorDeviceClass.POWER
+    
+    @property
+    def entity_registry_enabled_default(self):
+        """Dsiable entity in reversed by default"""
+        return self._entity_registry_enabled_default
 
     @property
     def state_class(self):
         """ Entity state_class """
         return SensorStateClass.MEASUREMENT
+
+class SunologyElectricalDataSensorEntityFeature(SensorEntity):
+    """Represent a mipower of a  device."""
+
+    def __init__(self, device:SunologyAbstractDevice, phase:SmartMeterPhase, hass):
+        """Set up SunologBatteryPowerSensor entity.""" 
+        self._device = device
+        self._name = device.name
+        self._phase = phase
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"edFeature")}_{self._phase}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self._state = None
+        self._hass = hass
+
+    @property
+    def entity_category(self):
+        return None
+
+    @property
+    def unique_id(self):
+        """Return the unique ID."""
+        return f"edFeature_{self._phase}_{device_registry.format_mac(self._device.device_id)}"
+
+    @property
+    def state(self):
+        """state property"""
+        match self._phase:
+            case SmartMeterPhase.ALL:
+                self._state = self._device.features.electricalData
+            case SmartMeterPhase.PHASE_1:
+                self._state = self._device.features.electricalDataP1
+            case SmartMeterPhase.PHASE_2:
+                self._state = self._device.features.electricalDataP2
+            case SmartMeterPhase.PHASE_3:
+                self._state = self._device.features.electricalDataP3
+        return self._state
+
+    @property
+    def name(self):
+        """ Entity name """
+        return f"{self._name} {self._phase} electrical data Feature"
+
+    @property
+    def icon(self):
+        """icon getter"""
+        return "mdi:tune-vertical"
+    
+    @property
+    def options(self):
+        return [
+            ElectricalDataFeature.UNUSED,
+            ElectricalDataFeature.PRODUCER,
+            ElectricalDataFeature.LOAD,
+            ElectricalDataFeature.GRID,
+            ElectricalDataFeature.PRODUCER_REV,
+            ElectricalDataFeature.LOAD_REV,
+            ElectricalDataFeature.GRID_REV
+        ]
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return the device info."""
+        return self._device.device_info
+    
+    @property
+    def device_class(self):
+        """ Entity device_class """
+        return SensorDeviceClass.ENUM
+    
+    @property
+    def entity_category(self):
+        """ Entity entity_category """
+        return EntityCategory.DIAGNOSTIC
 
 
 class SunologyTotalExportSensorEntity(SensorEntity):

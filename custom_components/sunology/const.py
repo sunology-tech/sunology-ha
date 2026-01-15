@@ -32,3 +32,13 @@ class SmartMeterTarifIndex(StrEnum):
     INDEX_8 = "idx8"
     INDEX_9 = "idx9"
     INDEX_10 = "idx10"
+
+class ElectricalDataFeature(StrEnum):
+    """Phase of a smart meter."""
+    UNUSED = "UNUSED"
+    PRODUCER = "PRODUCER"
+    LOAD = "LOAD"
+    GRID = "GRID"
+    PRODUCER_REV = "PRODUCER_REV"
+    LOAD_REV = "LOAD_REV"
+    GRID_REV = "GRID_REV"

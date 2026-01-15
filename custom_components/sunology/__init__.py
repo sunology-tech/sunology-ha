@@ -11,7 +11,6 @@ import math
 import time
 import json
 from threading import Thread
-import voluptuous as vol
 import jwt
 
 from aiohttp.web import json_response
@@ -164,12 +163,16 @@ class SunologyContext:
             zc = await zeroconf.async_get_instance(self._hass)
             await zc.async_wait_for_start()
             resolver = AddressResolver(host)
-            if await resolver.async_request(zc, 3000):
-                host_ip_obj = resolver.ip_addresses_by_version(IPVersion.All)
-                host_ip = str(host_ip_obj[0])
-                _LOGGER.debug(f"{host} IP addresses: {host_ip}")
-            else:
-                _LOGGER.error(f"Name {host} not resolved")
+            for i in range(15):
+                _LOGGER.debug(f"Try {i} to resolve {host}")
+                if await resolver.async_request(zc, 3000):
+                    host_ip_obj = resolver.ip_addresses_by_version(IPVersion.All)
+                    host_ip = str(host_ip_obj[0])
+                    _LOGGER.debug(f"{host} IP addresses: {host_ip}")
+                    break
+                else:
+                    _LOGGER.error(f"Name {host} not resolved")
+                    await asyncio.sleep(5)
         await socket.connect(host_ip, port, None)
         
 
@@ -314,7 +317,7 @@ class SunologyContext:
                         for sub_device in self._sunology_devices:
                             if isinstance(sub_device, StoreyPack) and sub_device.device_id.split("#")[0] == device.device_id:
                                 pack_index = int(sub_device.device_id.split("#")[1])
-                                if pack_index > product_data['packCount']:
+                                if 'packCount' in product_data.keys() and pack_index > product_data['packCount']:
                                     _LOGGER.info("Removed pack %s from storey %s", sub_device.device_id, device.device_id)
                                     self._sunology_devices.remove(sub_device)
                                     self.remove_devices_from_coordinator(sub_device)
@@ -432,8 +435,10 @@ class SunologyContext:
             coordinator = coordinated_device['coordinator']
             if device.device_id == data['id']:
                 if isinstance(device, StoreyMaster):
-                    device.status = data['status']
-                    device.acVoltage = data['acVoltage']
+                    if 'status' in data.keys():
+                        device.status = data['status']
+                    if 'acVoltage' in  data.keys():
+                        device.acVoltage = data['acVoltage']
                     device.battery_event_update(data['battery'])
                     if 'device_entities' in coordinated_device.keys():
                         for entity in coordinated_device['device_entities']:
