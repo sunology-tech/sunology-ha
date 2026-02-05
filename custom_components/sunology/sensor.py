@@ -29,6 +29,17 @@ from .device import (
 _LOGGER = logging.getLogger(PACKAGE_NAME) 
 
 
+def _format_devid_mac(mac: str):
+    """Format a MAC address to a format that can be used as a device ID."""
+    to_test = mac
+    if len(to_test) == 12:
+        # no : included
+        return "_".join(to_test.lower()[i : i + 2] for i in range(0, 12, 2))
+    if '#' in to_test:
+        return to_test.replace('#', '_')
+    return mac
+
+
 async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: disable=W0613
     """Set up Sunology device based off an entry."""
     sunology_context = config_entry.runtime_data
@@ -125,7 +136,7 @@ class SunologPvPowerSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"pvP")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"pvP")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._attr_device_info = device.device_info # For automatic device registration
         self._state = None
         self._hass = hass
@@ -137,7 +148,7 @@ class SunologPvPowerSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"pvP_{device_registry.format_mac(self._device.device_id)}"
+        return f"pvP_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -184,7 +195,7 @@ class SunologMiPowerSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"miP")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"miP")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -195,7 +206,7 @@ class SunologMiPowerSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"miP_{device_registry.format_mac(self._device.device_id)}"
+        return f"miP_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -246,7 +257,7 @@ class SunologyBatteryPowerSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"batP")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"batP")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -257,7 +268,7 @@ class SunologyBatteryPowerSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"batP_{device_registry.format_mac(self._device.device_id)}"
+        return f"batP_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -308,7 +319,7 @@ class SunologyBatteryTargetPowerSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"targetPow")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"targetPow")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -319,7 +330,7 @@ class SunologyBatteryTargetPowerSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"targetP_{device_registry.format_mac(self._device.device_id)}"
+        return f"targetP_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -371,7 +382,7 @@ class SunologyBatteryDcVoltageSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "V"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"dcVoltage")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"dcVoltage")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -382,7 +393,7 @@ class SunologyBatteryDcVoltageSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"dcVoltage_{device_registry.format_mac(self._device.device_id)}"
+        return f"dcVoltage_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -433,7 +444,7 @@ class SunologyBatteryMasterAcVoltageSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "V"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"acVoltage")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"acVoltage")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -444,7 +455,7 @@ class SunologyBatteryMasterAcVoltageSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"acVoltage_{device_registry.format_mac(self._device.device_id)}"
+        return f"acVoltage_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -491,7 +502,7 @@ class SunologyBatteryDcCurrentSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "A"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"dcCurrent")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"dcCurrent")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -502,7 +513,7 @@ class SunologyBatteryDcCurrentSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"dcCurrent_{device_registry.format_mac(self._device.device_id)}"
+        return f"dcCurrent_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -549,7 +560,7 @@ class SunologyBatteryEnergyProducedSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "mWh"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"energyProd")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"energyProd")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
         self._last_reset = '1970-01-01T00:00:00+00:00'
@@ -561,7 +572,7 @@ class SunologyBatteryEnergyProducedSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"energyProd_{device_registry.format_mac(self._device.device_id)}"
+        return f"energyProd_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -618,7 +629,7 @@ class SunologyBatteryEnergyConsumedSensorEntity( SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "mWh"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"energyCons")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"energyCons")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
         self._last_reset = '1970-01-01T00:00:00+00:00'
@@ -631,7 +642,7 @@ class SunologyBatteryEnergyConsumedSensorEntity( SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"energyCons_{device_registry.format_mac(self._device.device_id)}"
+        return f"energyCons_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -686,7 +697,7 @@ class SunologyBatteryMasterStatusSensorEntity(SensorEntity):
         """Set up SunologyStatusSensorEntity entity."""
         self._device = device
         self._name = device.name
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"status")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"status")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -697,7 +708,7 @@ class SunologyBatteryMasterStatusSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"status_{device_registry.format_mac(self._device.device_id)}"
+        return f"status_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -743,7 +754,7 @@ class SunologyBatterySocSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "%"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"batPct")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"batPct")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -754,7 +765,7 @@ class SunologyBatterySocSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"batPct_{device_registry.format_mac(self._device.device_id)}"
+        return f"batPct_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -827,7 +838,7 @@ class SunologyBatteryTempSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "°C"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"batTmp")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"batTmp")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -838,7 +849,7 @@ class SunologyBatteryTempSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"batTmp_{device_registry.format_mac(self._device.device_id)}"
+        return f"batTmp_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -884,7 +895,7 @@ class SunologyBatteryCellsTempSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "°C"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"cellsTmp")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"cellsTmp")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -895,7 +906,7 @@ class SunologyBatteryCellsTempSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"cellsTmp_{device_registry.format_mac(self._device.device_id)}"
+        return f"cellsTmp_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -945,7 +956,7 @@ class SunologyBatteryRadTempSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "°C"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"radTmp")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"radTmp")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -956,7 +967,7 @@ class SunologyBatteryRadTempSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"radTmp_{device_registry.format_mac(self._device.device_id)}"
+        return f"radTmp_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1003,7 +1014,7 @@ class SunologyBatteryMasterPowerSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "W"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"masterP")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"masterP")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -1014,7 +1025,7 @@ class SunologyBatteryMasterPowerSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"masterP_{device_registry.format_mac(self._device.device_id)}"
+        return f"masterP_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1065,7 +1076,7 @@ class SunologyElectricalDataSensorEntity_Power(SensorEntity):
         self._phase = phase
         self._reversed = reversed_state
         self._entity_registry_enabled_default = reversed_state
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"edPower")}_{self._phase}_{"reversed_" if self._reversed else ""}{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"edPower")}_{self._phase}_{"reversed_" if self._reversed else ""}{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
     
@@ -1084,7 +1095,7 @@ class SunologyElectricalDataSensorEntity_Power(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"power_{self._phase}_{"reversed_" if self._reversed else ""}{device_registry.format_mac(self._device.device_id)}"
+        return f"power_{self._phase}_{"reversed_" if self._reversed else ""}{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1135,7 +1146,7 @@ class SunologyElectricalDataSensorEntityFeature(SensorEntity):
         self._device = device
         self._name = device.name
         self._phase = phase
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"edFeature")}_{self._phase}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"edFeature")}_{self._phase}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -1146,7 +1157,7 @@ class SunologyElectricalDataSensorEntityFeature(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"edFeature_{self._phase}_{device_registry.format_mac(self._device.device_id)}"
+        return f"edFeature_{self._phase}_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1209,7 +1220,7 @@ class SunologyTotalExportSensorEntity(SensorEntity):
         self._name = device.name
         self._unit_of_measurement = "Wh"
         self._phase = phase
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"total_export")}_{self._phase}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"total_export")}_{self._phase}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -1220,7 +1231,7 @@ class SunologyTotalExportSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"total_export_{self._phase}_{device_registry.format_mac(self._device.device_id)}"
+        return f"total_export_{self._phase}_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1273,7 +1284,7 @@ class SunologyTotalImportSensorEntity(SensorEntity):
         self._name = device.name
         self._unit_of_measurement = "Wh"
         self._phase = phase
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"total_import")}_{self._phase}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"total_import")}_{self._phase}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -1284,7 +1295,7 @@ class SunologyTotalImportSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"total_import_{self._phase}_{device_registry.format_mac(self._device.device_id)}"
+        return f"total_import_{self._phase}_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1337,7 +1348,7 @@ class SunologyImportSensorEntity_PeriodIndex(SensorEntity):
         self._name = device.name
         self._unit_of_measurement = "Wh"
         self._tarif_index = tarif_index
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"import_on_period")}_{self._tarif_index}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"import_on_period")}_{self._tarif_index}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
     @property
@@ -1347,7 +1358,7 @@ class SunologyImportSensorEntity_PeriodIndex(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"import_on_period_{self._tarif_index}_{device_registry.format_mac(self._device.device_id)}"
+        return f"import_on_period_{self._tarif_index}_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1394,7 +1405,7 @@ class SunologyElectricityFrequencySensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "Hz"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"frequency")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"frequency")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -1405,7 +1416,7 @@ class SunologyElectricityFrequencySensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"frequency_{device_registry.format_mac(self._device.device_id)}"
+        return f"frequency_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1448,7 +1459,7 @@ class SunologyRssiSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "dB"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"rssi")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"rssi")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -1459,7 +1470,7 @@ class SunologyRssiSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"rssi_{device_registry.format_mac(self._device.device_id)}"
+        return f"rssi_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1506,7 +1517,7 @@ class SunologyApparentPowerExportSensorEntity(SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "VA"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"app_power_export")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"app_power_export")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -1517,7 +1528,7 @@ class SunologyApparentPowerExportSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"app_power_export_{device_registry.format_mac(self._device.device_id)}"
+        return f"app_power_export_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1559,7 +1570,7 @@ class SunologyApparentPowerImportSensorEntity( SensorEntity):
         self._device = device
         self._name = device.name
         self._unit_of_measurement = "VA"
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"app_power_import")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"app_power_import")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -1570,7 +1581,7 @@ class SunologyApparentPowerImportSensorEntity( SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"app_power_import_{device_registry.format_mac(self._device.device_id)}"
+        return f"app_power_import_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1612,7 +1623,7 @@ class SunologyContractSensorEntity(SensorEntity):
         
         self._device = device
         self._name = device.name
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"contract")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"contract")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -1623,7 +1634,7 @@ class SunologyContractSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"contract_{device_registry.format_mac(self._device.device_id)}"
+        return f"contract_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
@@ -1655,7 +1666,7 @@ class SunologyCurrentTarifSensorEntity(SensorEntity):
         
         self._device = device
         self._name = device.name
-        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"current_tarif")}_{device_registry.format_mac(device.device_id)}"# pylint: disable=C0301
+        self.entity_id = f"{ENTITY_ID_FORMAT.format(f"current_tarif")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
 
@@ -1666,7 +1677,7 @@ class SunologyCurrentTarifSensorEntity(SensorEntity):
     @property
     def unique_id(self):
         """Return the unique ID."""
-        return f"current_tarif_{device_registry.format_mac(self._device.device_id)}"
+        return f"current_tarif_{_format_devid_mac(self._device.device_id)}".lower()
 
     @property
     def state(self):
