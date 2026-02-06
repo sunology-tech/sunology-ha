@@ -98,7 +98,7 @@ async def async_remove_config_entry_device(hass, config_entry: SunologyConfigEnt
         identifier
         for identifier in device_entry.identifiers
         if identifier[0] == DOMAIN
-        and identifier[1] in [sunology_device.device_id for sunology_device in config_entry.runtime.sunology_devices]
+        and identifier[1] in [sunology_device.device_id for sunology_device in config_entry.runtime_data.sunology_devices]
     )
 
 
