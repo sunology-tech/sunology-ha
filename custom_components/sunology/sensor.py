@@ -57,72 +57,76 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
                 coordinated_device = next((coordinated_device for coordinated_device in coordinated_devices if coordinated_device['device'].device_id == coordinated_device_id), None)
                 device = coordinated_device['device']
                 coordinator = coordinated_device['coordinator']
-                if not 'device_entities' in coordinated_device: 
-                    coordinated_device['device_entities'] = []
+                new_entities = []
 
                 if isinstance(device, SolarEventInterface):
-                    coordinated_device['device_entities'].append(SunologPvPowerSensorEntity(device, hass))
-                    coordinated_device['device_entities'].append(SunologMiPowerSensorEntity(device, hass))
+                    new_entities.append(SunologPvPowerSensorEntity(device, hass))
+                    new_entities.append(SunologMiPowerSensorEntity(device, hass))
 
                 if isinstance(device, BatteryEventInterface):
-                    coordinated_device['device_entities'].append(SunologyBatteryPowerSensorEntity(device, hass))
-                    coordinated_device['device_entities'].append(SunologyBatterySocSensorEntity(device, hass))
-                    coordinated_device['device_entities'].append(SunologyBatteryTempSensorEntity(device, hass))
+                    new_entities.append(SunologyBatteryPowerSensorEntity(device, hass))
+                    new_entities.append(SunologyBatterySocSensorEntity(device, hass))
+                    new_entities.append(SunologyBatteryTempSensorEntity(device, hass))
                     if(isinstance(device,(StoreyMaster, StoreyPack))):
-                        coordinated_device['device_entities'].append(SunologyBatteryCellsTempSensorEntity(device, hass))
-                        coordinated_device['device_entities'].append(SunologyBatteryRadTempSensorEntity(device, hass))
-                        coordinated_device['device_entities'].append(SunologyBatteryTargetPowerSensorEntity(device, hass))
-                        coordinated_device['device_entities'].append(SunologyBatteryDcVoltageSensorEntity(device, hass))
-                        coordinated_device['device_entities'].append(SunologyBatteryDcCurrentSensorEntity(device, hass))
-                        coordinated_device['device_entities'].append(SunologyBatteryEnergyProducedSensorEntity(device, hass))
-                        coordinated_device['device_entities'].append(SunologyBatteryEnergyConsumedSensorEntity(device, hass))
+                        new_entities.append(SunologyBatteryCellsTempSensorEntity(device, hass))
+                        new_entities.append(SunologyBatteryRadTempSensorEntity(device, hass))
+                        new_entities.append(SunologyBatteryTargetPowerSensorEntity(device, hass))
+                        new_entities.append(SunologyBatteryDcVoltageSensorEntity(device, hass))
+                        new_entities.append(SunologyBatteryDcCurrentSensorEntity(device, hass))
+                        new_entities.append(SunologyBatteryEnergyProducedSensorEntity(device, hass))
+                        new_entities.append(SunologyBatteryEnergyConsumedSensorEntity(device, hass))
                 
                 if isinstance(device, StoreyMaster):
-                    coordinated_device['device_entities'].append(SunologyBatteryMasterStatusSensorEntity(device, hass))
-                    coordinated_device['device_entities'].append(SunologyBatteryMasterAcVoltageSensorEntity(device, hass))
+                    new_entities.append(SunologyBatteryMasterStatusSensorEntity(device, hass))
+                    new_entities.append(SunologyBatteryMasterAcVoltageSensorEntity(device, hass))
 
                 if isinstance(device, SmartMeter_3P):
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.ALL, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.ALL, hass, True))
-                    coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
-                    coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.ALL, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_1, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_1, hass, True))
-                    coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
-                    coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.PHASE_1, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_2, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_2, hass, True))
-                    coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
-                    coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.PHASE_2, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_3, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_3, hass, True))
-                    coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
-                    coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.PHASE_3, hass))
-                    coordinated_device['device_entities'].append(SunologyElectricityFrequencySensorEntity(device, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.ALL, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.ALL, hass, True))
+                    new_entities.append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+                    new_entities.append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.ALL, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_1, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_1, hass, True))
+                    new_entities.append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
+                    new_entities.append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_1, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.PHASE_1, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_2, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_2, hass, True))
+                    new_entities.append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
+                    new_entities.append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_2, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.PHASE_2, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_3, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntity_Power(device,  SmartMeterPhase.PHASE_3, hass, True))
+                    new_entities.append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
+                    new_entities.append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.PHASE_3, hass))
+                    new_entities.append(SunologyElectricalDataSensorEntityFeature(device, SmartMeterPhase.PHASE_3, hass))
+                    new_entities.append(SunologyElectricityFrequencySensorEntity(device, hass))
                 if isinstance(device, LinkyTransmitter):
-                    coordinated_device['device_entities'].append(SunologyApparentPowerImportSensorEntity(device, hass))
-                    coordinated_device['device_entities'].append(SunologyApparentPowerExportSensorEntity(device, hass))
-                    coordinated_device['device_entities'].append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
-                    coordinated_device['device_entities'].append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
-                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_1, hass))
-                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_2, hass))
-                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_3, hass))
-                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_4, hass))
-                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_5, hass))
-                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_6, hass))
-                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_7, hass))
-                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_8, hass))
-                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_9, hass))
-                    coordinated_device['device_entities'].append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_10, hass))
-                    coordinated_device['device_entities'].append(SunologyContractSensorEntity(device, hass))
-                    coordinated_device['device_entities'].append(SunologyCurrentTarifSensorEntity(device, hass))
+                    new_entities.append(SunologyApparentPowerImportSensorEntity(device, hass))
+                    new_entities.append(SunologyApparentPowerExportSensorEntity(device, hass))
+                    new_entities.append(SunologyTotalExportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+                    new_entities.append(SunologyTotalImportSensorEntity(device,  SmartMeterPhase.ALL, hass))
+                    new_entities.append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_1, hass))
+                    new_entities.append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_2, hass))
+                    new_entities.append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_3, hass))
+                    new_entities.append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_4, hass))
+                    new_entities.append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_5, hass))
+                    new_entities.append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_6, hass))
+                    new_entities.append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_7, hass))
+                    new_entities.append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_8, hass))
+                    new_entities.append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_9, hass))
+                    new_entities.append(SunologyImportSensorEntity_PeriodIndex(device,  SmartMeterTarifIndex.INDEX_10, hass))
+                    new_entities.append(SunologyContractSensorEntity(device, hass))
+                    new_entities.append(SunologyCurrentTarifSensorEntity(device, hass))
 
-                coordinated_device['device_entities'].append(SunologyRssiSensorEntity(device, hass))
-                entities.extend(coordinated_device['device_entities'])
+                new_entities.append(SunologyRssiSensorEntity(device, hass))
+
+                if not 'device_entities' in coordinated_device: 
+                    coordinated_device['device_entities'] = []
+                coordinated_device['device_entities'].extend(new_entities)
+
+                entities.extend(new_entities)
             async_add_entities(entities)
     _check_device()
     return True
@@ -144,6 +148,14 @@ class SunologPvPowerSensorEntity(SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -202,6 +214,14 @@ class SunologMiPowerSensorEntity(SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -266,6 +286,14 @@ class SunologyBatteryPowerSensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"batP_{_format_devid_mac(self._device.device_id)}".lower()
@@ -326,6 +354,14 @@ class SunologyBatteryTargetPowerSensorEntity(SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -391,6 +427,14 @@ class SunologyBatteryDcVoltageSensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"dcVoltage_{_format_devid_mac(self._device.device_id)}".lower()
@@ -447,6 +491,14 @@ class SunologyBatteryMasterAcVoltageSensorEntity(SensorEntity):
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"acVoltage")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def entity_category(self):
@@ -511,6 +563,14 @@ class SunologyBatteryDcCurrentSensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"dcCurrent_{_format_devid_mac(self._device.device_id)}".lower()
@@ -555,7 +615,7 @@ class SunologyBatteryDcCurrentSensorEntity(SensorEntity):
 class SunologyBatteryEnergyProducedSensorEntity(SensorEntity):
     """Represent a mipower of a  device."""
 
-    def __init__(self,    device:SunologyAbstractDevice, hass):
+    def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologyBatteryEnergyProducedSensor entity."""
         self._device = device
         self._name = device.name
@@ -568,6 +628,14 @@ class SunologyBatteryEnergyProducedSensorEntity(SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -640,6 +708,14 @@ class SunologyBatteryEnergyConsumedSensorEntity( SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"energyCons_{_format_devid_mac(self._device.device_id)}".lower()
@@ -706,6 +782,14 @@ class SunologyBatteryMasterStatusSensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"status_{_format_devid_mac(self._device.device_id)}".lower()
@@ -761,6 +845,14 @@ class SunologyBatterySocSensorEntity(SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -847,6 +939,14 @@ class SunologyBatteryTempSensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"batTmp_{_format_devid_mac(self._device.device_id)}".lower()
@@ -902,6 +1002,14 @@ class SunologyBatteryCellsTempSensorEntity(SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -965,6 +1073,14 @@ class SunologyBatteryRadTempSensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"radTmp_{_format_devid_mac(self._device.device_id)}".lower()
@@ -1021,6 +1137,14 @@ class SunologyBatteryMasterPowerSensorEntity(SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -1093,6 +1217,14 @@ class SunologyElectricalDataSensorEntity_Power(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"power_{self._phase}_{"reversed_" if self._reversed else ""}{_format_devid_mac(self._device.device_id)}".lower()
@@ -1153,6 +1285,14 @@ class SunologyElectricalDataSensorEntityFeature(SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -1229,6 +1369,14 @@ class SunologyTotalExportSensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"total_export_{self._phase}_{_format_devid_mac(self._device.device_id)}".lower()
@@ -1293,6 +1441,14 @@ class SunologyTotalImportSensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"total_import_{self._phase}_{_format_devid_mac(self._device.device_id)}".lower()
@@ -1351,9 +1507,18 @@ class SunologyImportSensorEntity_PeriodIndex(SensorEntity):
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"import_on_period")}_{self._tarif_index}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
+    
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -1414,6 +1579,14 @@ class SunologyElectricityFrequencySensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"frequency_{_format_devid_mac(self._device.device_id)}".lower()
@@ -1466,6 +1639,14 @@ class SunologyRssiSensorEntity(SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -1526,6 +1707,14 @@ class SunologyApparentPowerExportSensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"app_power_export_{_format_devid_mac(self._device.device_id)}".lower()
@@ -1577,6 +1766,14 @@ class SunologyApparentPowerImportSensorEntity( SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):
@@ -1632,6 +1829,14 @@ class SunologyContractSensorEntity(SensorEntity):
         return None
 
     @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
+
+    @property
     def unique_id(self):
         """Return the unique ID."""
         return f"contract_{_format_devid_mac(self._device.device_id)}".lower()
@@ -1673,6 +1878,14 @@ class SunologyCurrentTarifSensorEntity(SensorEntity):
     @property
     def entity_category(self):
         return None
+
+    @property
+    def hass(self):
+        return self._hass
+
+    @hass.setter
+    def hass(self, hass):
+        pass
 
     @property
     def unique_id(self):

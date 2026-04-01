@@ -51,12 +51,13 @@ from .const import (
     CONF_GATEWAY_PORT,
     MIN_UNTIL_REFRESH,
     DOMAIN,
-    PACKAGE_NAME
+    PACKAGE_NAME,
+    FlowWorkingModes
 )
 
 _LOGGER = logging.getLogger(PACKAGE_NAME)
 
-PLATFORMS = [Platform.SENSOR]
+PLATFORMS = [Platform.SENSOR, Platform.SWITCH, Platform.SELECT]
 
 
 async def async_setup_entry(hass, entry: SunologyConfigEntry):
@@ -84,11 +85,10 @@ async def async_setup_entry(hass, entry: SunologyConfigEntry):
 async def async_unload_entry(hass, entry: SunologyConfigEntry):
     """Unload an Sunology config entry."""
     unload_ok = True
-    # unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
-    
-    context =  entry.runtime_data
-    await context.socket.disconnect() # Disconnect only if all devices is disabled
+    # unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)   
+    context = entry.runtime_data
     context.unload()
+    await context.socket.disconnect() # Disconnect only if all devices is disabled
     return unload_ok
 
 
@@ -100,7 +100,6 @@ async def async_remove_config_entry_device(hass, config_entry: SunologyConfigEnt
         if identifier[0] == DOMAIN
         and identifier[1] in [sunology_device.device_id for sunology_device in config_entry.runtime_data.sunology_devices]
     )
-
 
 
 class SunologyContext:
@@ -254,7 +253,7 @@ class SunologyContext:
     
     def remove_devices_from_coordinator(self, device: SunologyAbstractDevice):
         for coordinated_device in self._sunology_devices_coordinated:
-            if device['device'].unique_id == coordinated_device['device'].unique_id:
+            if device.unique_id == coordinated_device['device'].unique_id:
                 self._sunology_devices_coordinated.pop(coordinated_device)
 
     async def refresh_devices(self):
@@ -297,6 +296,14 @@ class SunologyContext:
         """set the Sunology socket"""
         self._socket = socket
 
+    async def send_openNework(self, value: bool):
+        """Send open network command """
+        await self.socket.send_hub_command({"openNetwork": value})
+
+    async def send_setFlowWorkginMode(self, value: FlowWorkingModes):
+        """Send set_flowWorkingMode command """
+        await self.socket.send_hub_command({"flowConfig": {"flowWorkingMode": value }})
+
 
     def process_new_device(self, product_data):
         new_devices = []
@@ -321,21 +328,21 @@ class SunologyContext:
                                     _LOGGER.info("Removed pack %s from storey %s", sub_device.device_id, device.device_id)
                                     self._sunology_devices.remove(sub_device)
                                     self.remove_devices_from_coordinator(sub_device)
-                        for pack in product_data['packs']:
-                            pack_found = False
-                            for sub_device in self._sunology_devices:
-                                if sub_device.device_id == f"{product_data['id']}#{pack['packIndex']}":
-                                    pack_found = True
-                                    sub_device.update_product(product_data)
-                                    break
-                            if not pack_found:
-                                st_pack = StoreyPack(product_data, pack['packIndex'])
-                                st_pack.capacity = pack['capacity']
-                                st_pack.maxInput = pack['maxCons']
-                                st_pack.maxOutput = pack['maxProd']
-                                new_packs.append(st_pack)
-                        self._sunology_devices.extend(new_packs)
-                        self.add_devices_to_coordinator(new_packs)
+                        if 'packs' in product_data.keys():
+                            for pack in product_data['packs']:
+                                pack_found = False
+                                for sub_device in self._sunology_devices:
+                                        pack_found = True
+                                        sub_device.update_product(product_data)
+                                        break
+                                if not pack_found:
+                                    st_pack = StoreyPack(product_data, pack['packIndex'])
+                                    st_pack.capacity = pack['capacity']
+                                    st_pack.maxInput = pack['maxCons'] if 'maxCons' in pack.keys() else 0
+                                    st_pack.maxOutput = pack['maxProd'] if 'maxCons' in pack.keys() else 0
+                                    new_packs.append(st_pack)
+                            self._sunology_devices.extend(new_packs)
+                            self.add_devices_to_coordinator(new_packs)
                     break
         if found == False and 'productName' in product_data.keys():
             _LOGGER.info("Device not found in coordoned device list %s , %s", product_data['id'], [x['device'].device_id for x in self._sunology_devices_coordinated])
@@ -345,7 +352,7 @@ class SunologyContext:
                 case "PLAY":
                     new_devices.append(PLAY(product_data))
                 case "STREAM_CONNECT":
-                    new_devices.append(Gateway(product_data))
+                    new_devices.append(Gateway(product_data, self.send_openNework, self.send_setFlowWorkginMode))
                     if "devices" in product_data.keys():
                         for hub_device in product_data['devices']:
                             new_devices.extend(self.process_new_device(hub_device))
@@ -358,18 +365,14 @@ class SunologyContext:
                         products_valid=False
                     else:
                         master.capacity = product_data['battery']['capacity']
-                        master.maxInput = product_data['battery']['maxCons']
-                        master.maxOutput = product_data['battery']['maxProd']
-                    if 'packs' not in product_data.keys():
-                        _LOGGER.warning("No packs data found for Storey %s", product_data['id'])
-                        products_valid=False
-                        #raise HomeAssistantError(f"No packs data found for Storey {product_data['id']}")
-                    else:
+                        master.maxInput = product_data['battery']['maxCons'] if 'maxCons' in product_data['battery'].keys() else 0
+                        master.maxOutput = product_data['battery']['maxProd'] if 'maxProd' in product_data['battery'].keys() else 0
+                    if 'packs' in product_data.keys():
                         for pack in product_data['packs']:
                             st_pack = StoreyPack(product_data, pack['packIndex'])
                             st_pack.capacity = pack['capacity']
-                            st_pack.maxInput = pack['maxCons']
-                            st_pack.maxOutput = pack['maxProd']
+                            st_pack.maxInput = pack['maxCons'] if 'maxCons' in pack.keys() else 0
+                            st_pack.maxOutput = pack['maxProd'] if 'maxProd' in pack.keys() else 0
                             new_devices.append(st_pack)
                     if products_valid:
                         new_devices.append(master)
@@ -439,22 +442,23 @@ class SunologyContext:
                         device.status = data['status']
                     if 'acVoltage' in  data.keys():
                         device.acVoltage = data['acVoltage']
-                    device.battery_event_update(data['battery'])
+                    if 'battery' in data.keys():
+                        device.battery_event_update(data['battery'])
                     if 'device_entities' in coordinated_device.keys():
                         for entity in coordinated_device['device_entities']:
                             _LOGGER.debug('Update entity %s', entity.entity_id)
                             entity.schedule_update_ha_state(force_refresh=False)
-
-                    for pack in data['packs']:
-                        for sub_coordinated_device in self._sunology_devices_coordinated:
-                            sub_device = sub_coordinated_device['device']
-                            if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":
-                                sub_device.battery_event_update(pack)
-                                if 'device_entities' in sub_coordinated_device.keys():
-                                    for entity in sub_coordinated_device['device_entities']:
-                                        _LOGGER.debug('Update entity %s', entity.entity_id)
-                                        entity.schedule_update_ha_state(force_refresh=False)
-                                break
+                    if 'packs' in data.keys():
+                        for pack in data['packs']:
+                            for sub_coordinated_device in self._sunology_devices_coordinated:
+                                sub_device = sub_coordinated_device['device']
+                                if sub_device.device_id == f"{data['id']}#{pack['packIndex'] }":
+                                    sub_device.battery_event_update(pack)
+                                    if 'device_entities' in sub_coordinated_device.keys():
+                                        for entity in sub_coordinated_device['device_entities']:
+                                            _LOGGER.debug('Update entity %s', entity.entity_id)
+                                            entity.schedule_update_ha_state(force_refresh=False)
+                                    break
                 else:
                     _LOGGER.info("Solar event receive on non storey master device")
                 break

@@ -42,3 +42,8 @@ class ElectricalDataFeature(StrEnum):
     PRODUCER_REV = "PRODUCER_REV"
     LOAD_REV = "LOAD_REV"
     GRID_REV = "GRID_REV"
+
+class FlowWorkingModes(StrEnum):
+    """Phase of a smart meter."""
+    COST_OPTIM = "COST_OPTIM"
+    POWER_OPTIM = "POWER_OPTIM"
