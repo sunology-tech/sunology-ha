@@ -110,6 +110,7 @@ class SunologFlowWorkingModeSelectEntity(SelectEntity):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected option."""
+        self._state = option
         await self._device._set_flowWorkingMode(option)
 
     @property
