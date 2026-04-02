@@ -101,11 +101,13 @@ class SunologOpenNetworkSwitchEntity(SwitchEntity):
     async def async_turn_on(self, **kwargs):
         """Turn the entity on."""
         self._state = STATE_ON
+        self._device.open_network = True
         await self._device.set_openNetwork(True)
     
     async def async_turn_off(self, **kwargs):
         """Turn the entity off."""
         self._state = STATE_OFF
+        self._device.open_network = False
         await self._device.set_openNetwork(False)
 
     @property
