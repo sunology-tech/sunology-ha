@@ -97,7 +97,7 @@ class SunologySocket():
 
     def on_disconnect(self):
         """ event: disconnected """
-        _LOGGER.debug('Sunology socket disconnected')
+        _LOGGER.warning('Sunology socket disconnected')
         if self._on_disconnect_callback is not None:
             self._on_disconnect_callback()
 
@@ -124,9 +124,16 @@ class SunologySocket():
         except UnicodeDecodeError as err :
             _LOGGER.warning(f"Non json event received: {message}, {err=}, {type(err)=}")
 
+    async def send_hub_command(self, body):
+        """ send a command to the hub """
+        if self._connected:
+            await self._socket.send(json.dumps({"event": "hubCommand", "data": body}))
+        else:
+            _LOGGER.warning('Socket not connected')
+
     async def connect(self, lan_host_ip, lan_port, auth_token, basepath="ws", end_timeout=5):
         """ connect to the sunology socket"""
-        _LOGGER.debug('Socket connection call %s', lan_host_ip)
+        _LOGGER.info('Socket connection call %s', lan_host_ip)
         if self._connected:
             _LOGGER.warn('Socket already connected')
         else:
@@ -142,7 +149,7 @@ class SunologySocket():
                             self.process(message)
                     except ConnectionClosed:
                         await asyncio.sleep(end_timeout)
-                        _LOGGER.debug(f"Connection closed")
+                        _LOGGER.info(f"Connection closed")
                     except e:
                         await asyncio.sleep(end_timeout)
                         _LOGGER.warn(f"unhandled excepiton {e}")

@@ -1,5 +1,5 @@
 """Home Assistant representation of an Sunology device."""
-from .const import SmartMeterPhase, SmartMeterTarifIndex, ElectricalDataFeature, DOMAIN as SUNOLOGY_DOMAIN, PACKAGE_NAME
+from .const import SmartMeterPhase, SmartMeterTarifIndex, ElectricalDataFeature, FlowWorkingModes, DOMAIN as SUNOLOGY_DOMAIN, PACKAGE_NAME
 from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntry
 from homeassistant.helpers import device_registry as dr
 from typing import List
@@ -779,9 +779,14 @@ class SmartMeter_3P(SunologyAbstractDevice):
 class Gateway(SunologyAbstractDevice):
     """Home Assistant representation of a Sunology device PLAYMax."""
 
-    def __init__(self, raw_gateway):
+    def __init__(self, raw_gateway, set_openNetwork_callback: Callable[[bool], None] = None, set_flowWorkingMode_callback: Callable[[FlowWorkingModes], None] = None ):
         """Initialize Gateway device."""        
         super().__init__(raw_gateway)
+        self._openNetwork = raw_gateway['zbPairingActivated'] if 'zbPairingActivated' in raw_gateway.keys() else False
+        self._flowWorkingMode = raw_gateway['flowWorkingMode'] if 'flowWorkingMode' in raw_gateway.keys() else FlowWorkingModes.POWER_OPTIM.name
+        
+        self._set_openNetwork_callback = set_openNetwork_callback
+        self._set_flowWorkingMode_callback = set_flowWorkingMode_callback
 
     @property
     def suggested_area(self) -> str:
@@ -793,15 +798,53 @@ class Gateway(SunologyAbstractDevice):
         """Get the model name."""
         name = "STREAM Connect"
         return name
+
+    @property
+    def open_network(self) -> bool:
+        """Get the open network status."""
+        return self._openNetwork
     
+    @open_network.setter
+    def open_network(self, open_network: bool):
+        """Set the open network status."""
+        self._openNetwork = open_network
+    
+    @property
+    def flow_working_mode(self) -> FlowWorkingModes:
+        """Get the open network status."""
+        return self._flowWorkingMode
+    
+    @flow_working_mode.setter
+    def flow_working_mode(self, flowWorkingMode: FlowWorkingModes):
+        """Set the open network status."""
+        self._flowWorkingMode = flowWorkingMode
+
+
+    async def set_openNetwork(self, value: bool):
+        if self._set_openNetwork_callback == None:
+            LOGGER.error("No callback set for set_openNetwork")
+            return
+        await self._set_openNetwork_callback(value)
+
+    async def _set_flowWorkingMode(self, value: FlowWorkingModes):
+        if self._set_flowWorkingMode_callback == None:
+            LOGGER.error("No callback set for set_flowWorkingMode")
+            return
+        await self._set_flowWorkingMode_callback(value)
 
     @property
     def device_info(self):
         dev_info = super().device_info
         return dev_info
 
-
     def __str__(self) -> str:
         """Get string representation."""
         return f"Sunology Device: {self.name}::{self.model_name}::{self.unique_id}"
 
+    
+    def update_product(self, raw_event):
+        super().update_product(raw_event)
+        if 'zbPairingActivated' in raw_event.keys():
+            self._openNetwork = raw_event['zbPairingActivated']
+        if 'flowWorkingMode' in raw_event.keys():
+            self._flowWorkingMode = raw_event['flowWorkingMode']
