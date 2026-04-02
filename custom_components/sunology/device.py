@@ -2,6 +2,7 @@
 from .const import SmartMeterPhase, SmartMeterTarifIndex, ElectricalDataFeature, FlowWorkingModes, DOMAIN as SUNOLOGY_DOMAIN, PACKAGE_NAME
 from homeassistant.helpers.device_registry import DeviceInfo, DeviceEntry
 from homeassistant.helpers import device_registry as dr
+from collections.abc import Callable
 from typing import List
 import logging
 
