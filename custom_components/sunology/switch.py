@@ -1,20 +1,16 @@
 """ switch for Sunology objects """
 
 import logging
-from typing import Any, Mapping
+from typing import Any
 
-from homeassistant.core import callback
-from homeassistant.const import EntityCategory, STATE_ON, STATE_OFF
-from homeassistant.helpers.entity import DeviceInfo, EntityCategory
-from homeassistant.helpers import device_registry
+from homeassistant.const import STATE_ON, STATE_OFF
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.components.switch import SwitchEntity, ENTITY_ID_FORMAT
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-    DataUpdateCoordinator,
-)
+
 
 from .const import FlowWorkingModes, PACKAGE_NAME, DOMAIN as SUNOLOGY_DOMAIN
 from .device import (
+    SunologyAbstractDevice,
     Gateway
 )
 
@@ -62,7 +58,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities): # pylint: d
     return True
 
 class SunologOpenNetworkSwitchEntity(SwitchEntity):
-    """Represent a openNetowkr option of a device."""
+    """Represent an open network option of a device."""
 
     def __init__(self, device:SunologyAbstractDevice, hass):
         """Set up SunologPvPowerSensor entity."""
@@ -108,14 +104,14 @@ class SunologOpenNetworkSwitchEntity(SwitchEntity):
         await self._device.set_openNetwork(True)
     
     async def async_turn_off(self, **kwargs):
-        """Turn the entity on."""
+        """Turn the entity off."""
         self._state = STATE_OFF
         await self._device.set_openNetwork(False)
 
     @property
     def name(self):
         """ pvP name """
-        return f"{self._name} open accesories network"
+        return f"{self._name} open accessories network"
 
     @property
     def icon(self):

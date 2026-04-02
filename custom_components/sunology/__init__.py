@@ -296,11 +296,11 @@ class SunologyContext:
         """set the Sunology socket"""
         self._socket = socket
 
-    async def send_openNework(self, value: bool):
+    async def send_openNetwork(self, value: bool):
         """Send open network command """
         await self.socket.send_hub_command({"openNetwork": value})
 
-    async def send_setFlowWorkginMode(self, value: FlowWorkingModes):
+    async def send_setFlowWorkingMode(self, value: FlowWorkingModes):
         """Send set_flowWorkingMode command """
         await self.socket.send_hub_command({"flowConfig": {"flowWorkingMode": value }})
 
@@ -332,14 +332,14 @@ class SunologyContext:
                             for pack in product_data['packs']:
                                 pack_found = False
                                 for sub_device in self._sunology_devices:
-                                        pack_found = True
-                                        sub_device.update_product(product_data)
-                                        break
+                                    pack_found = True
+                                    sub_device.update_product(product_data)
+                                    break
                                 if not pack_found:
                                     st_pack = StoreyPack(product_data, pack['packIndex'])
                                     st_pack.capacity = pack['capacity']
                                     st_pack.maxInput = pack['maxCons'] if 'maxCons' in pack.keys() else 0
-                                    st_pack.maxOutput = pack['maxProd'] if 'maxCons' in pack.keys() else 0
+                                    st_pack.maxOutput = pack['maxProd'] if 'maxProd' in pack.keys() else 0
                                     new_packs.append(st_pack)
                             self._sunology_devices.extend(new_packs)
                             self.add_devices_to_coordinator(new_packs)
@@ -352,7 +352,7 @@ class SunologyContext:
                 case "PLAY":
                     new_devices.append(PLAY(product_data))
                 case "STREAM_CONNECT":
-                    new_devices.append(Gateway(product_data, self.send_openNework, self.send_setFlowWorkginMode))
+                    new_devices.append(Gateway(product_data, self.send_openNetwork, self.send_setFlowWorkingMode))
                     if "devices" in product_data.keys():
                         for hub_device in product_data['devices']:
                             new_devices.extend(self.process_new_device(hub_device))

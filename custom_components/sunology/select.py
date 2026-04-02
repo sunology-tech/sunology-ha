@@ -1,20 +1,15 @@
 """ select for Sunology objects """
 
 import logging
-from typing import Any, Mapping
+from typing import Any
 
-from homeassistant.core import callback
-from homeassistant.const import EntityCategory
-from homeassistant.helpers.entity import DeviceInfo, EntityCategory
-from homeassistant.helpers import device_registry
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.components.select import SelectEntity, ENTITY_ID_FORMAT
-from homeassistant.helpers.update_coordinator import (
-    CoordinatorEntity,
-    DataUpdateCoordinator,
-)
+
 
 from .const import FlowWorkingModes, PACKAGE_NAME, DOMAIN as SUNOLOGY_DOMAIN
 from .device import (
+    SunologyAbstractDevice,
     Gateway
 )
 
