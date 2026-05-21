@@ -6,6 +6,10 @@ DOMAIN = "sunology"
 CONF_GATEWAY_HOST = "lan_gateway_host"
 CONF_GATEWAY_PORT = "lan_gateway_port"
 
+# NEW: cloud credentials for write operations
+CONF_USERNAME = "username"
+CONF_PASSWORD = "password"
+
 GATEWAY_DEFAULT_PORT = 20199
 
 MIN_UNTIL_REFRESH = 2
@@ -47,3 +51,10 @@ class FlowWorkingModes(StrEnum):
     """Phase of a smart meter."""
     COST_OPTIM = "COST_OPTIM"
     POWER_OPTIM = "POWER_OPTIM"
+
+
+# NEW: known STOREY working modes (incomplete — capture MANUEL/SUNCAST/EXPERT
+# values via the mobile app to extend this enum)
+class StoreyWorkingMode(StrEnum):
+    """Working mode of a STOREY battery (set via cloud API)."""
+    HUB_REMOTE = "HUB_REMOTE"
