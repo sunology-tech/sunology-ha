@@ -44,10 +44,35 @@ You need to have an Home Assistant and a Sunology STREAM Connect
 1. Go to **Configuration** > **Integrations** > **Add Integration**.
 2. Search for "Sunology" and select it.
 3. Follow the prompts to configure your Sunology device:
-   - Enter the IP address or hostname of your STREAM Connect device.
-   - Enter the network port of your STREAM Connect device.
+   * Enter the IP address or hostname of your STREAM Connect device.
+   * Enter the network port of your STREAM Connect device.
+   * *(Optional)* Enter your Sunology account email and password — the same
+     credentials you use in the official mobile app. Leave blank for
+     read-only mode.
+
+To change your Sunology credentials later (for example after a password
+reset), open **Settings** > **Devices & Services** > **Sunology** >
+**Configure**. No need to remove and re-add the integration.
+
+## How writes work
+
+When Sunology account credentials are provided, write operations to STOREY
+batteries are routed through Sunology's cloud API at
+`backend-mobile.stream.sunology.eu`. This is the same path the official
+mobile app uses — the local WebSocket on the STREAM Connect gateway only
+accepts a small whitelist of write commands and silently rejects writes to
+STOREY-level configuration.
+
+After a successful write, the gateway echoes the new state on its local
+WebSocket within roughly 30 seconds, so Home Assistant entity state stays
+consistent with what the mobile app shows. The cloud session cookie is
+cached (~400 days) and reused across restarts; re-authentication happens
+automatically on expiry.
+
+If credentials are not provided, the integration runs in read-only mode and
+the write-capable entities (`number.minsoc_*`, `datetime.pause_until_*`,
+`button.*_pause_*`) are simply not created.
 
 ## Logging
 
 To enable detailed logging for troubleshooting, you can configure the logger in your `configuration.yaml` file:
-
