@@ -150,7 +150,7 @@ class SunologySocket():
                     except ConnectionClosed:
                         await asyncio.sleep(end_timeout)
                         _LOGGER.info(f"Connection closed")
-                    except e:
+                    except Exception as e:
                         await asyncio.sleep(end_timeout)
                         _LOGGER.warn(f"unhandled excepiton {e}")
             else:
@@ -165,7 +165,7 @@ class SunologySocket():
                     except ConnectionClosed:
                         await asyncio.sleep(end_timeout)
                         _LOGGER.debug(f"Connection closed")
-                    except e:
+                    except Exception as e:
                         await asyncio.sleep(end_timeout)
                         _LOGGER.warn(f"unhandled excepiton {e}")
             self._connected = False
@@ -177,4 +177,3 @@ class SunologySocket():
         if self._socket is not None:
             await self._socket.close()
         self._connected = False
-        self.on_disconnect()

@@ -1,4 +1,4 @@
-""" sunology custom conpennt """
+""" sunology custom component """
 from collections import defaultdict
 
 import asyncio
@@ -49,46 +49,66 @@ from .device import (
 from .const import (
     CONF_GATEWAY_HOST,
     CONF_GATEWAY_PORT,
+    CONF_USERNAME,
+    CONF_PASSWORD,
     MIN_UNTIL_REFRESH,
     DOMAIN,
     PACKAGE_NAME,
     FlowWorkingModes
 )
+from .cloud import SunologyAuthError, SunologyCloud
 
 _LOGGER = logging.getLogger(PACKAGE_NAME)
 
-PLATFORMS = [Platform.SENSOR, Platform.SWITCH, Platform.SELECT]
-
+PLATFORMS = [Platform.SENSOR, Platform.SWITCH, Platform.SELECT, Platform.NUMBER, Platform.DATETIME, Platform.BUTTON]
 
 async def async_setup_entry(hass, entry: SunologyConfigEntry):
     """Set up Sunology entry."""
-    gateway_host = entry.data[CONF_GATEWAY_HOST] if CONF_GATEWAY_HOST in entry.data.keys() else None
-    gateway_port = entry.data[CONF_GATEWAY_PORT] if CONF_GATEWAY_PORT in entry.data.keys() else None
+    gateway_host = entry.data.get(CONF_GATEWAY_HOST)
+    gateway_port = entry.data.get(CONF_GATEWAY_PORT)
+    username = entry.data.get(CONF_USERNAME)
+    password = entry.data.get(CONF_PASSWORD)
+
+    cloud = None
+    if username and password:
+        cloud = SunologyCloud(hass, username, password)
+        try:
+            await cloud.login()
+        except SunologyAuthError as err:
+            _LOGGER.warning(
+                "Sunology cloud login failed (write features disabled): %s", err
+            )
+            cloud = None
+        except Exception:  # pylint: disable=broad-except
+            _LOGGER.exception(
+                "Unexpected error contacting Sunology cloud (write features disabled)"
+            )
+            cloud = None
+
     context = SunologyContext(
         hass,
         entry,
         gateway_host,
-        gateway_port
+        gateway_port,
+        cloud=cloud,
     )
 
-    _LOGGER.info("Context-setup and start the thread")
+    _LOGGER.info("Context-setup and start the thread (cloud=%s)", cloud is not None)
     _LOGGER.info("Thread started")
     entry.runtime_data = context
 
     # We add device to the context
     await context.init_context(hass)
 
-    await hass.config_entries.async_forward_entry_setups(entry,PLATFORMS)
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
     return True
 
 
 async def async_unload_entry(hass, entry: SunologyConfigEntry):
-    """Unload an Sunology config entry."""
-    unload_ok = True
-    # unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)   
-    context = entry.runtime_data
-    context.unload()
-    await context.socket.disconnect() # Disconnect only if all devices is disabled
+    """Unload a Sunology config entry."""
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if unload_ok:
+        await entry.runtime_data.async_shutdown()
     return unload_ok
 
 
@@ -105,12 +125,14 @@ async def async_remove_config_entry_device(hass, config_entry: SunologyConfigEnt
 class SunologyContext:
     """Hold the current Sunology context."""
 
-    def __init__(self, hass, entry, gateway_host, gateway_port):
+    def __init__(self, hass, entry, gateway_host, gateway_port, cloud=None):
         """Initialize an Sunology context."""
         self._hass = hass
         self._entry = entry
         self._gateway_host = gateway_host
         self._gateway_port = gateway_port
+        self._cloud = cloud
+        self._cloud_uuid_by_serial: dict[str, str] = {}
 
         self._sunology_devices = []
         self._sunology_devices_coordinated = []
@@ -119,7 +141,8 @@ class SunologyContext:
         self._socket_thread = None
         self._connection_atempt = 0
         self._previous_refresh = math.floor(time.time()/60)
-        self._coroutines_future = []
+        self._tasks: set[asyncio.Task] = set()
+        self._shutting_down = False
 
     @property
     def hass(self):
@@ -137,6 +160,11 @@ class SunologyContext:
         return self._gateway_port
 
     @property
+    def cloud(self):
+        """Return the cloud client, or None if cloud is not configured."""
+        return self._cloud
+
+    @property
     def sunology_devices(self):
         """ Sunology devices list """
         return self._sunology_devices
@@ -146,11 +174,29 @@ class SunologyContext:
         """ Sunology devices list """
         self._sunology_devices = devices
     
-    def unload(self):
-        """ hass """
-        for future in self._coroutines_future:
-            future.cancel()
-        self._coroutines_future = []
+    async def async_shutdown(self) -> None:
+        """Ferme proprement toutes les ressources runtime. Idempotente."""
+        if self._shutting_down:
+            return
+        self._shutting_down = True
+        _LOGGER.info("Sunology context shutdown initiated")
+
+        pending = list(self._tasks)
+        for task in pending:
+            task.cancel()
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)
+        self._tasks.clear()
+
+        if self._socket is not None:
+            try:
+                await asyncio.wait_for(self._socket.disconnect(), timeout=5.0)
+            except asyncio.TimeoutError:
+                _LOGGER.warning("WebSocket close timed out after 5 s — reload proceeds anyway")
+            except Exception:
+                _LOGGER.debug("Exception during socket disconnect", exc_info=True)
+
+        _LOGGER.info("Sunology context shutdown complete")
 
 
     async def _async_connect(self, socket, host, port, token):
@@ -189,9 +235,11 @@ class SunologyContext:
 
         self._socket = socket
 
-        self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
-            self._async_connect(socket, self.gateway_host, self.gateway_port, None), self._hass.loop
-        ))
+        task = self._hass.async_create_task(
+            self._async_connect(socket, self.gateway_host, self.gateway_port, None)
+        )
+        task.add_done_callback(self._tasks.discard)
+        self._tasks.add(task)
 
     async def get_device(self, device_id):
         """ here we return last device by id"""
@@ -205,6 +253,24 @@ class SunologyContext:
         """Used to refresh the device list"""
         _LOGGER.info("Init_context")
         update_interval = timedelta(minutes=MIN_UNTIL_REFRESH)
+
+        # NEW: fetch the cloud device list FIRST so the mapping is ready
+        # before the socket starts emitting productInfo events
+        if self._cloud is not None:
+            try:
+                devices = await self._cloud.list_devices()
+                self._cloud_uuid_by_serial = {
+                    d["serialNumber"].upper(): d["id"]
+                    for d in devices
+                    if d.get("serialNumber")
+                }
+                _LOGGER.info(
+                    "Cloud device mapping: %d devices (%s)",
+                    len(self._cloud_uuid_by_serial),
+                    list(self._cloud_uuid_by_serial.keys()),
+                )
+            except Exception:  # pylint: disable=broad-except
+                _LOGGER.exception("Failed to fetch cloud device list")
 
         if not self._thread_started:
             _LOGGER.info("Start the thread")
@@ -262,10 +328,12 @@ class SunologyContext:
         epoch_min = math.floor(time.time()/60)
         if not self.socket.is_connected:
             _LOGGER.info("Socket not connected detected, atempt: %s", self._connection_atempt)
-            self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
-                self._async_connect(self.socket, self.gateway_host, self.gateway_port, None), self._hass.loop
-            ))
-            self._connection_atempt+=1
+            task = self._hass.async_create_task(
+                self._async_connect(self.socket, self.gateway_host, self.gateway_port, None)
+            )
+            task.add_done_callback(self._tasks.discard)
+            self._tasks.add(task)
+            self._connection_atempt += 1
 
         if epoch_min != self._previous_refresh:
             self._previous_refresh =  epoch_min
@@ -358,6 +426,10 @@ class SunologyContext:
                             new_devices.extend(self.process_new_device(hub_device))
                 case "STOREY":
                     master = StoreyMaster(product_data)
+                    # NEW: attach the cloud UUID from the mapping built at startup
+                    master.cloud_uuid = self._cloud_uuid_by_serial.get(
+                        product_data['id'].upper()
+                    )
                     products_valid=True
                     if 'battery' not in product_data.keys():
                         _LOGGER.warning("No battery data found for Storey %s", product_data['id'])
@@ -397,9 +469,9 @@ class SunologyContext:
             self._sunology_devices.append(device)
             self.add_device_to_coordinator(device)
         if len(new_devices) > 0:
-            self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
-                self._reload_platforms(), self._hass.loop
-            ))
+            task = self._hass.async_create_task(self._reload_platforms())
+            task.add_done_callback(self._tasks.discard)
+            self._tasks.add(task)
 
 
     @callback
@@ -493,10 +565,13 @@ class SunologyContext:
     
     @callback
     def on_disconnect_callback(self):
-        """on gridEvent callback"""
+        """on disconnect callback"""
         _LOGGER.info("On disconnect received %s", self._connection_atempt)
-        self._coroutines_future.append(asyncio.run_coroutine_threadsafe(
-            self._async_connect(self.socket, self.gateway_host, self.gateway_port, None), self._hass.loop
-        ))
-        self._connection_atempt+=1
-
+        if self._shutting_down:
+            return
+        task = self._hass.async_create_task(
+            self._async_connect(self.socket, self.gateway_host, self.gateway_port, None)
+        )
+        task.add_done_callback(self._tasks.discard)
+        self._tasks.add(task)
+        self._connection_atempt += 1
