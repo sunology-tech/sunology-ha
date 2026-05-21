@@ -6,12 +6,16 @@
         "description": "Setup your STREAM Connect",
         "data": {
           "lan_gateway_host": "Host ip or host",
-          "lan_gateway_port": "Host port"
+          "lan_gateway_port": "Host port",
+          "username": "Sunology account email (optional)",
+          "password": "Sunology account password (optional)"
         }
       }
     },
     "error": {
       "faulty_credentials": "Authorization failed",
+      "invalid_auth": "Authentication failed — check your Sunology credentials",
+      "cloud_unreachable": "Could not reach the Sunology cloud",
       "unknown": "Unknown error"
     },
     "abort": {
@@ -22,6 +26,24 @@
     },
     "create_entry": {
       "default": "Pairing success"
+    }
+  },
+    "options": {
+    "step": {
+      "init": {
+        "title": "Sunology options",
+        "description": "Update the gateway connection or your Sunology account credentials. Leave email and password empty to disable write features (read-only mode remains active via the local WebSocket).",
+        "data": {
+          "lan_gateway_host": "Host name or IP address",
+          "lan_gateway_port": "Network port",
+          "username": "Sunology account email (optional)",
+          "password": "Sunology account password (optional)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Authentication failed — check your Sunology credentials",
+      "cloud_unreachable": "Could not reach the Sunology cloud"
     }
   }
 }

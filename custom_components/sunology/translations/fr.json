@@ -3,15 +3,19 @@
     "step": {
       "user": {
         "title": "Configurez Sunology",
-        "description": "Configurez votre STREAM Connect",
+        "description": "Configurez votre STREAM Connect. Les identifiants Sunology sont optionnels — laissez-les vides pour fonctionner en lecture seule, ou renseignez-les pour activer les entités d'écriture (réserve batterie, pause STOREY).",
         "data": {
-          "lan_gateway_host": "Adresse ip ou adresse locale",
-          "lan_gateway_port": "Port réseau"
+          "lan_gateway_host": "Adresse IP ou adresse locale",
+          "lan_gateway_port": "Port réseau",
+          "username": "E-mail du compte Sunology (optionnel)",
+          "password": "Mot de passe du compte Sunology (optionnel)"
         }
       }
     },
     "error": {
       "faulty_credentials": "Erreur d'authentification",
+      "invalid_auth": "Échec de l'authentification — vérifiez vos identifiants Sunology",
+      "cloud_unreachable": "Impossible de joindre le cloud Sunology",
       "unknown": "Erreur inconnue"
     },
     "abort": {
@@ -22,6 +26,24 @@
     },
     "create_entry": {
       "default": "Appairage réussi"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Options Sunology",
+        "description": "Modifiez la connexion à la passerelle ou les identifiants du compte Sunology. Laissez l'e-mail et le mot de passe vides pour désactiver les fonctionnalités d'écriture (le mode lecture seule reste actif via le WebSocket local).",
+        "data": {
+          "lan_gateway_host": "Adresse IP ou adresse locale",
+          "lan_gateway_port": "Port réseau",
+          "username": "E-mail du compte Sunology (optionnel)",
+          "password": "Mot de passe du compte Sunology (optionnel)"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Échec de l'authentification — vérifiez vos identifiants Sunology",
+      "cloud_unreachable": "Impossible de joindre le cloud Sunology"
     }
   }
 }
