@@ -952,7 +952,7 @@ class SunologyBatteryEnergyProducedSensorEntity(SensorEntity):
         """Set up SunologyBatteryEnergyProducedSensor entity."""
         self._device = device
         self._name = device.name
-        self._unit_of_measurement = "mWh"
+        self._unit_of_measurement = "Wh"
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"energyProd")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
@@ -978,7 +978,9 @@ class SunologyBatteryEnergyProducedSensorEntity(SensorEntity):
     @property
     def state(self):
         """state property"""
-        self._state = self._device.energyProd
+        # the firmware reports a cumulative counter in mWh; expose it in Wh (valid ENERGY unit)
+        raw = self._device.energyProd
+        self._state = round(raw / 1000) if raw is not None else None
         return self._state
 
     @property
@@ -1009,7 +1011,7 @@ class SunologyBatteryEnergyProducedSensorEntity(SensorEntity):
     @property
     def state_class(self):
         """ Entity state_class """
-        return SensorStateClass.TOTAL
+        return SensorStateClass.TOTAL_INCREASING
     
     # @property
     # def last_reset(self):
@@ -1029,7 +1031,7 @@ class SunologyBatteryEnergyConsumedSensorEntity( SensorEntity):
         """Set up SunologyBatteryEnergyConsumedSensor entity."""
         self._device = device
         self._name = device.name
-        self._unit_of_measurement = "mWh"
+        self._unit_of_measurement = "Wh"
         self.entity_id = f"{ENTITY_ID_FORMAT.format(f"energyCons")}_{_format_devid_mac(device.device_id)}".lower()# pylint: disable=C0301
         self._state = None
         self._hass = hass
@@ -1056,7 +1058,9 @@ class SunologyBatteryEnergyConsumedSensorEntity( SensorEntity):
     @property
     def state(self):
         """state property"""
-        self._state = self._device.energyCons
+        # the firmware reports a cumulative counter in mWh; expose it in Wh (valid ENERGY unit)
+        raw = self._device.energyCons
+        self._state = round(raw / 1000) if raw is not None else None
         return self._state
 
     @property
@@ -1087,7 +1091,7 @@ class SunologyBatteryEnergyConsumedSensorEntity( SensorEntity):
     @property
     def state_class(self):
         """ Entity state_class """
-        return SensorStateClass.TOTAL
+        return SensorStateClass.TOTAL_INCREASING
     
     # @property
     # def last_reset(self):
@@ -1357,7 +1361,7 @@ class SunologyBatteryCellsTempSensorEntity(SensorEntity):
     @property
     def state(self):
         """state property"""
-        self._state = self._device.batTmp
+        self._state = self._device.cellsTmp
         return self._state
 
     @property
